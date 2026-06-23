@@ -1,0 +1,642 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>软考后台 · 激活管理</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', Roboto, sans-serif;
+        }
+        body {
+            background: #eef2f7;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        .admin-wrapper {
+            max-width: 860px;
+            width: 100%;
+            background: white;
+            border-radius: 24px;
+            box-shadow: 0 4px 20px rgba(0, 0, 0, 0.08);
+            padding: 32px 36px 40px;
+        }
+        .admin-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 28px;
+            padding-bottom: 16px;
+            border-bottom: 2px solid #eef2f7;
+            flex-wrap: wrap;
+            gap: 12px;
+        }
+        .admin-header h1 {
+            font-size: 1.7rem;
+            color: #1a2a3a;
+        }
+        .admin-header h1 i {
+            color: #2f7a9e;
+            margin-right: 10px;
+        }
+        .admin-header .logout-btn {
+            background: #f0f4f8;
+            border: none;
+            padding: 10px 22px;
+            border-radius: 40px;
+            font-weight: 600;
+            color: #c0392b;
+            cursor: pointer;
+            border: 1px solid #e8ecf0;
+        }
+        .admin-header .logout-btn:hover {
+            background: #fde8e8;
+        }
+
+        .login-overlay {
+            position: fixed;
+            inset: 0;
+            background: rgba(0, 0, 0, 0.45);
+            backdrop-filter: blur(6px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 999;
+        }
+        .login-box {
+            background: white;
+            border-radius: 24px;
+            padding: 40px 44px;
+            max-width: 400px;
+            width: 90%;
+            box-shadow: 0 20px 60px rgba(0, 0, 0, 0.3);
+        }
+        .login-box h2 {
+            font-size: 1.5rem;
+            color: #1a2a3a;
+            margin-bottom: 8px;
+        }
+        .login-box p {
+            color: #4a6a7a;
+            margin-bottom: 24px;
+            font-size: 0.95rem;
+        }
+        .login-box input {
+            width: 100%;
+            padding: 14px 20px;
+            border: 1.5px solid #d5dce4;
+            border-radius: 60px;
+            font-size: 1rem;
+            outline: none;
+            margin-bottom: 16px;
+            background: #f8fafc;
+        }
+        .login-box input:focus {
+            border-color: #2f7a9e;
+            background: white;
+        }
+        .login-box .btn-login {
+            width: 100%;
+            padding: 14px;
+            background: #1a4d66;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-size: 1rem;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .login-box .btn-login:hover {
+            background: #0f3f55;
+        }
+        .login-error {
+            color: #c0392b;
+            font-size: 0.9rem;
+            margin-top: 8px;
+            display: none;
+        }
+        .login-box .config-hint {
+            margin-top: 14px;
+            font-size: 0.75rem;
+            color: #8aaec2;
+            text-align: center;
+            border-top: 1px solid #eef2f7;
+            padding-top: 14px;
+        }
+
+        .stats-bar {
+            display: flex;
+            gap: 30px;
+            background: #f0f4f8;
+            padding: 14px 24px;
+            border-radius: 60px;
+            margin-bottom: 24px;
+            flex-wrap: wrap;
+        }
+        .stats-bar span {
+            font-weight: 500;
+            color: #1f4b62;
+        }
+        .stats-bar span i {
+            color: #2f7a9e;
+            margin-right: 6px;
+        }
+
+        .add-area {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px;
+        }
+        .add-area input {
+            flex: 1;
+            min-width: 180px;
+            padding: 14px 20px;
+            border: 1.5px solid #d5dce4;
+            border-radius: 60px;
+            font-size: 1rem;
+            outline: none;
+            background: #f8fafc;
+        }
+        .add-area input:focus {
+            border-color: #2f7a9e;
+            background: white;
+        }
+        .add-area .btn-add {
+            padding: 14px 32px;
+            background: #1f7a5a;
+            color: white;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .add-area .btn-add:hover {
+            background: #146348;
+        }
+        .add-area .btn-refresh {
+            padding: 14px 20px;
+            background: #f0f4f8;
+            color: #1f4b62;
+            border: none;
+            border-radius: 60px;
+            font-weight: 600;
+            cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .add-area .btn-refresh:hover {
+            background: #e0e8f0;
+        }
+
+        .table-wrap {
+            background: #f8fafc;
+            border-radius: 16px;
+            overflow: hidden;
+            border: 1px solid #e8ecf0;
+        }
+        table {
+            width: 100%;
+            border-collapse: collapse;
+        }
+        th {
+            text-align: left;
+            padding: 16px 20px;
+            background: #f0f4f8;
+            color: #1a2a3a;
+            font-weight: 600;
+        }
+        td {
+            padding: 14px 20px;
+            border-top: 1px solid #e8ecf0;
+            color: #1a2a3a;
+        }
+        .phone-cell {
+            font-weight: 600;
+            font-size: 1.05rem;
+            letter-spacing: 0.5px;
+        }
+        .badge-bound {
+            background: #dff0e6;
+            color: #1b6b4a;
+            padding: 4px 14px;
+            border-radius: 40px;
+            font-size: 0.8rem;
+            font-weight: 600;
+        }
+        .btn-delete {
+            background: #fde8e8;
+            border: none;
+            padding: 6px 16px;
+            border-radius: 40px;
+            color: #c0392b;
+            font-weight: 600;
+            cursor: pointer;
+        }
+        .btn-delete:hover {
+            background: #fcd5d5;
+        }
+        .empty-row td {
+            text-align: center;
+            color: #8aaec2;
+            padding: 40px 20px;
+        }
+        .loading-row td {
+            text-align: center;
+            color: #4a6a7a;
+            padding: 30px 20px;
+        }
+
+        .footer-tip {
+            margin-top: 20px;
+            font-size: 0.85rem;
+            color: #4a6a7a;
+            text-align: center;
+        }
+        .footer-tip i {
+            color: #2f7a9e;
+        }
+
+        .toast {
+            position: fixed;
+            bottom: 30px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #1a2a3a;
+            color: white;
+            padding: 14px 32px;
+            border-radius: 60px;
+            font-weight: 500;
+            z-index: 999;
+            opacity: 0;
+            transition: opacity 0.4s;
+            pointer-events: none;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.3);
+        }
+        .toast.show {
+            opacity: 1;
+        }
+        .toast.success {
+            background: #1f7a5a;
+        }
+        .toast.error {
+            background: #c0392b;
+        }
+
+        @media (max-width: 600px) {
+            .admin-wrapper {
+                padding: 20px;
+            }
+            .admin-header {
+                flex-direction: column;
+                align-items: start;
+            }
+            .stats-bar {
+                gap: 14px;
+            }
+            .add-area {
+                flex-direction: column;
+            }
+            .add-area .btn-add,
+            .add-area .btn-refresh {
+                justify-content: center;
+            }
+        }
+        .fa,
+        .fas,
+        .far {
+            font-family: 'Font Awesome 6 Free';
+            font-weight: 900;
+        }
+        .fa-phone-alt:before {
+            content: "\f098";
+        }
+        .fa-unlock:before {
+            content: "\f09c";
+        }
+        .fa-check-circle:before {
+            content: "\f058";
+        }
+        .fa-lock:before {
+            content: "\f023";
+        }
+        .fa-sign-out-alt:before {
+            content: "\f2f5";
+        }
+        .fa-plus:before {
+            content: "\f067";
+        }
+        .fa-trash:before {
+            content: "\f1f8";
+        }
+        .fa-sync-alt:before {
+            content: "\f2f1";
+        }
+        .fa-info-circle:before {
+            content: "\f05a";
+        }
+    </style>
+</head>
+<body>
+
+    <div class="toast" id="toast"></div>
+
+    <div class="login-overlay" id="loginOverlay">
+        <div class="login-box">
+            <h2><i class="fas fa-lock" style="color:#2f7a9e;"></i> 管理员登录</h2>
+            <p>输入密码进入后台管理</p>
+            <input type="password" id="adminPwdInput" placeholder="请输入管理密码" autocomplete="off">
+            <button class="btn-login" id="loginBtn"><i class="fas fa-sign-in-alt"></i> 登录</button>
+            <div class="login-error" id="loginError">❌ 密码错误，请重试</div>
+            <div class="config-hint">
+                <i class="fas fa-info-circle"></i> 默认密码: admin888
+            </div>
+        </div>
+    </div>
+
+    <div class="admin-wrapper" id="adminMain" style="display:none;">
+        <div class="admin-header">
+            <h1><i class="fas fa-users-cog"></i> 激活管理</h1>
+            <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+                <span class="sync-status" id="syncStatus"><i class="fas fa-cloud-upload-alt"></i> 已同步</span>
+                <button class="logout-btn" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出</button>
+            </div>
+        </div>
+
+        <div class="stats-bar">
+            <span><i class="fas fa-phone-alt"></i> 已激活: <strong id="totalCount">0</strong> 个</span>
+            <span><i class="fas fa-github"></i> 数据存储于 GitHub Issues</span>
+        </div>
+
+        <div class="add-area">
+            <input type="tel" id="newPhoneInput" placeholder="输入11位手机号" maxlength="11">
+            <button class="btn-add" id="addBtn"><i class="fas fa-plus-circle"></i> 激活</button>
+            <button class="btn-refresh" id="refreshBtn"><i class="fas fa-sync-alt"></i> 刷新</button>
+        </div>
+
+        <div class="table-wrap">
+            <table>
+                <thead>
+                    <tr><th>手机号</th><th>状态</th><th style="text-align:right;">操作</th></tr>
+                </thead>
+                <tbody id="phoneTableBody">
+                    <tr class="loading-row"><td colspan="3"><i class="fas fa-spinner fa-spin"></i> 加载中...</td></tr>
+                </tbody>
+            </table>
+        </div>
+
+        <div class="footer-tip">
+            <i class="fas fa-github"></i> 数据存储在 GitHub Issues 中，换电脑也能同步管理
+        </div>
+    </div>
+
+    <script>
+        (function() {
+            const urlParams = new URLSearchParams(window.location.search);
+            const GITHUB_TOKEN = urlParams.get('token');
+            if (!GITHUB_TOKEN) {
+                document.body.innerHTML =
+                    '<div style="padding:50px;text-align:center;font-size:18px;color:#c0392b;">⚠️ 缺少 token 参数<br><br><small>访问格式: admin.html?token=你的Token</small></div>';
+                throw new Error('缺少 token 参数');
+            }
+
+            const REPO_OWNER = '51ruankao';
+            const REPO_NAME = 'xinchu';
+            const LABEL_ACTIVATED = '已激活';
+            const ADMIN_PASSWORD = 'admin888';
+
+            async function fetchPhoneList() {
+                const url =
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
+                try {
+                    const response = await fetch(url, {
+                        headers: {
+                            'Authorization': `token ${GITHUB_TOKEN}`,
+                            'Accept': 'application/vnd.github.v3+json'
+                        }
+                    });
+                    if (!response.ok) {
+                        throw new Error(`GitHub API 错误: ${response.status}`);
+                    }
+                    const issues = await response.json();
+                    return issues.map(issue => issue.title.trim());
+                } catch (error) {
+                    console.error("❌ 获取列表失败:", error);
+                    throw error;
+                }
+            }
+
+            async function addPhoneToGitHub(phone) {
+                const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues`;
+                const response = await fetch(url, {
+                    method: 'POST',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({
+                        title: phone,
+                        labels: [LABEL_ACTIVATED],
+                        body: `激活手机号: ${phone}\n激活时间: ${new Date().toLocaleString()}`
+                    })
+                });
+                if (!response.ok) {
+                    const err = await response.json();
+                    throw new Error(err.message || '添加失败');
+                }
+                return await response.json();
+            }
+
+            async function deletePhoneFromGitHub(phone) {
+                const url =
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
+                const response = await fetch(url, {
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json'
+                    }
+                });
+                if (!response.ok) throw new Error('查找失败');
+                const issues = await response.json();
+                const target = issues.find(issue => issue.title.trim() === phone);
+                if (!target) throw new Error('未找到该手机号');
+                const closeUrl =
+                    `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues/${target.number}`;
+                const closeRes = await fetch(closeUrl, {
+                    method: 'PATCH',
+                    headers: {
+                        'Authorization': `token ${GITHUB_TOKEN}`,
+                        'Accept': 'application/vnd.github.v3+json',
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ state: 'closed' })
+                });
+                if (!closeRes.ok) throw new Error('删除失败');
+                return true;
+            }
+
+            const loginOverlay = document.getElementById('loginOverlay');
+            const adminMain = document.getElementById('adminMain');
+            const adminPwdInput = document.getElementById('adminPwdInput');
+            const loginBtn = document.getElementById('loginBtn');
+            const loginError = document.getElementById('loginError');
+            const logoutBtn = document.getElementById('logoutBtn');
+            const phoneTableBody = document.getElementById('phoneTableBody');
+            const totalCount = document.getElementById('totalCount');
+            const syncStatus = document.getElementById('syncStatus');
+            const newPhoneInput = document.getElementById('newPhoneInput');
+            const addBtn = document.getElementById('addBtn');
+            const refreshBtn = document.getElementById('refreshBtn');
+            const toast = document.getElementById('toast');
+
+            let toastTimer = null;
+
+            function showToast(message, type = 'info') {
+                toast.textContent = message;
+                toast.className = 'toast';
+                if (type === 'success') toast.classList.add('success');
+                else if (type === 'error') toast.classList.add('error');
+                toast.classList.add('show');
+                clearTimeout(toastTimer);
+                toastTimer = setTimeout(() => { toast.classList.remove('show'); }, 3000);
+            }
+
+            function setLoading(loading) {
+                if (loading) {
+                    phoneTableBody.innerHTML =
+                        `<tr class="loading-row"><td colspan="3"><i class="fas fa-spinner fa-spin"></i> 加载中...</td></tr>`;
+                }
+            }
+
+            async function renderTable() {
+                setLoading(true);
+                try {
+                    const list = await fetchPhoneList();
+                    totalCount.textContent = list.length;
+                    syncStatus.innerHTML =
+                        `<i class="fas fa-check-circle" style="color:#1b7a4a;"></i> 已同步 (${new Date().toLocaleTimeString()})`;
+
+                    if (list.length === 0) {
+                        phoneTableBody.innerHTML = `<tr class="empty-row"><td colspan="3">暂无激活手机号</td></tr>`;
+                        return;
+                    }
+
+                    let html = '';
+                    list.forEach(phone => {
+                        html += `
+                                <tr>
+                                    <td class="phone-cell">${phone}</td>
+                                    <td><span class="badge-bound"><i class="fas fa-check-circle"></i> 已激活</span></td>
+                                    <td style="text-align:right;">
+                                        <button class="btn-delete" data-phone="${phone}"><i class="fas fa-trash-alt"></i> 撤销</button>
+                                    </td>
+                                </tr>
+                            `;
+                    });
+                    phoneTableBody.innerHTML = html;
+
+                    document.querySelectorAll('.btn-delete').forEach(btn => {
+                        btn.addEventListener('click', async function() {
+                            const phone = this.dataset.phone;
+                            if (!confirm(`确定要撤销 ${phone} 的激活吗？`)) return;
+                            try {
+                                await deletePhoneFromGitHub(phone);
+                                showToast(`✅ ${phone} 已撤销`, 'success');
+                                await renderTable();
+                            } catch (err) {
+                                showToast(`❌ ${err.message}`, 'error');
+                            }
+                        });
+                    });
+                } catch (err) {
+                    syncStatus.innerHTML =
+                        `<i class="fas fa-exclamation-circle" style="color:#c0392b;"></i> 同步失败: ${err.message}`;
+                    phoneTableBody.innerHTML =
+                        `<tr class="empty-row"><td colspan="3">⚠️ 加载失败: ${err.message}</td></tr>`;
+                    showToast(`❌ ${err.message}`, 'error');
+                }
+            }
+
+            async function handleAddPhone() {
+                const phone = newPhoneInput.value.trim();
+                if (!/^\d{11}$/.test(phone)) {
+                    showToast('❌ 请输入11位有效手机号', 'error');
+                    return;
+                }
+                try {
+                    const list = await fetchPhoneList();
+                    if (list.includes(phone)) {
+                        showToast('⚠️ 该手机号已激活', 'error');
+                        return;
+                    }
+                    await addPhoneToGitHub(phone);
+                    showToast(`✅ ${phone} 激活成功`, 'success');
+                    newPhoneInput.value = '';
+                    await renderTable();
+                } catch (err) {
+                    showToast(`❌ ${err.message}`, 'error');
+                }
+            }
+
+            function login() {
+                const pwd = adminPwdInput.value.trim();
+                if (pwd === ADMIN_PASSWORD) {
+                    loginOverlay.style.display = 'none';
+                    adminMain.style.display = 'block';
+                    loginError.style.display = 'none';
+                    renderTable();
+                    adminPwdInput.value = '';
+                } else {
+                    loginError.style.display = 'block';
+                    setTimeout(() => { loginError.style.display = 'none'; }, 3000);
+                }
+            }
+
+            function logout() {
+                if (confirm('确认退出后台？')) {
+                    loginOverlay.style.display = 'flex';
+                    adminMain.style.display = 'none';
+                    adminPwdInput.value = '';
+                }
+            }
+
+            loginBtn.addEventListener('click', login);
+            adminPwdInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') login();
+            });
+
+            logoutBtn.addEventListener('click', logout);
+
+            addBtn.addEventListener('click', handleAddPhone);
+
+            newPhoneInput.addEventListener('keypress', function(e) {
+                if (e.key === 'Enter') {
+                    e.preventDefault();
+                    handleAddPhone();
+                }
+            });
+
+            newPhoneInput.addEventListener('input', function() {
+                this.value = this.value.replace(/\D/g, '');
+            });
+
+            refreshBtn.addEventListener('click', renderTable);
+
+            console.log('🔐 后台管理已加载 (GitHub Issues 存储)');
+            console.log(`📁 仓库: ${REPO_OWNER}/${REPO_NAME}`);
+            console.log('📞 默认密码: admin888');
+        })();
+    </script>
+</body>
+</html>
