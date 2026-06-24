@@ -869,34 +869,123 @@
             activationArea.style.display = 'flex';
         }
 
-        async function performActivation(phone, remember) {
-            if (!phone || !phone.trim()) { setStatus('⚠️ 请输入手机号码', 'error'); return false; }
-            const raw = phone.trim();
-            if (!/^\d{11}$/.test(raw)) { setStatus('❌ 请输入11位有效手机号', 'error'); return false; }
-            setStatus('⏳ 正在验证...', 'info');
-            try {
-                const ok = await checkPhoneOnGitHub(raw);
-                if (ok) {
-                    isActivated = true; activePhone = raw;
-                    setStatus('✅ 激活成功！欢迎回来', 'success');
-                    updateAllCards(true);
-                    phoneInput.value = raw;
-                    showToast('✅ 欢迎回来，' + raw, 'success');
-                    if (remember) { setStoredPhone(raw); showRememberedUser(raw); }
+        // ================================================================
+// ★★★ JSONBin 配置 ★★★
+// ================================================================
+const JSONBIN_BIN_ID = '6a3bdc3fda38895dfef77918';
+const JSONBIN_API_KEY = '$2a$10$X0E9OX3GwZKdS1UitU9JieFyWt3/LGmWIEJQ0ZQ0A/Ey8RyFJKPu';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
+// ================================================================
+// ★★★ 从 JSONBin 读取激活手机号列表 ★★★
+// ================================================================
+async function fetchActivatedPhones() {
+    try {
+        const response = await fetch(JSONBIN_URL, {
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        return data.record.phones || [];
+    } catch (error) {
+        console.error('读取激活列表失败:', error);
+        return [];
+    }
+}
+
+// ★★★ 激活函数（缓存优先） ★★★
+async function performActivation(phone) {
+    if (!phone || phone.trim() === '') {
+        document.getElementById('statusMessage').textContent = '⚠️ 请输入手机号';
+        document.getElementById('statusMessage').className = 'status-message error';
+        return false;
+    }
+    const raw = phone.trim();
+    if (!/^\d{11}$/.test(raw)) {
+        document.getElementById('statusMessage').textContent = '❌ 请输入11位有效手机号';
+        document.getElementById('statusMessage').className = 'status-message error';
+        return false;
+    }
+
+    // 检查缓存（24小时有效期）
+    const cacheKey = `ruankao_activate_${raw}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+        try {
+            const data = JSON.parse(cached);
+            const now = Date.now();
+            if (now - data.time < 86400000) {
+                if (data.valid) {
+                    doActivate(raw);
+                    showToast('✅ 激活成功（缓存）', 'success');
                     return true;
                 } else {
-                    isActivated = false; activePhone = '';
-                    setStatus('❌ 该手机号未激活，请联系管理员', 'error');
-                    updateAllCards(false);
-                    showToast('❌ 手机号未激活', 'error');
+                    document.getElementById('statusMessage').textContent = '❌ 该手机号未激活';
+                    document.getElementById('statusMessage').className = 'status-message error';
                     return false;
                 }
-            } catch(e) {
-                setStatus('❌ 验证失败: ' + e.message, 'error');
-                showToast('❌ ' + e.message, 'error');
-                return false;
             }
+        } catch (e) {}
+    }
+
+    document.getElementById('statusMessage').textContent = '⏳ 正在验证...';
+    document.getElementById('statusMessage').className = 'status-message';
+
+    try {
+        const phoneList = await fetchActivatedPhones();
+        const isValid = phoneList.includes(raw);
+
+        localStorage.setItem(cacheKey, JSON.stringify({
+            valid: isValid,
+            time: Date.now()
+        }));
+
+        if (isValid) {
+            doActivate(raw);
+            showToast('🎉 激活成功！', 'success');
+            return true;
+        } else {
+            document.getElementById('statusMessage').textContent = '❌ 该手机号未激活，请联系管理员';
+            document.getElementById('statusMessage').className = 'status-message error';
+            return false;
         }
+    } catch (error) {
+        const oldCached = localStorage.getItem(cacheKey);
+        if (oldCached) {
+            try {
+                const oldData = JSON.parse(oldCached);
+                if (oldData.valid) {
+                    doActivate(raw);
+                    showToast('⚠️ 网络异常，使用缓存记录激活', 'success');
+                    return true;
+                }
+            } catch (e) {}
+        }
+        document.getElementById('statusMessage').textContent = '⚠️ 验证服务暂不可用，请检查网络后重试';
+        document.getElementById('statusMessage').className = 'status-message error';
+        return false;
+    }
+}
+
+// ★★★ 实际激活执行 ★★★
+function doActivate(phone) {
+    isActivated = true;
+    activePhone = phone;
+    document.getElementById('statusMessage').textContent = '✅ 激活成功！';
+    document.getElementById('statusMessage').className = 'status-message success';
+    document.getElementById('globalStatusText').textContent = `已激活 (${phone})`;
+    document.getElementById('activationArea').style.display = 'none';
+    document.getElementById('rememberedArea').style.display = 'block';
+    document.getElementById('rememberedPhoneDisplay').textContent = phone;
+    setStoredPhone(phone);
+    updateAllCards(true);
+    renderCategories(true);
+    showToast('✅ 欢迎回来，' + phone, 'success');
+}
 
         function deactivate() {
             isActivated = false; activePhone = '';
