@@ -12326,34 +12326,61 @@
         // ================================================================
 
         async function performActivation(phone) {
-            if (!phone || phone.trim() === '') {
-                document.getElementById('statusMsg').textContent = '⚠️ 请输入手机号';
-                document.getElementById('statusMsg').className = 'status-msg error';
-                return false;
-            }
-            const raw = phone.trim();
-            if (!/^\d{11}$/.test(raw)) {
-                document.getElementById('statusMsg').textContent = '❌ 请输入11位有效手机号';
-                document.getElementById('statusMsg').className = 'status-msg error';
-                return false;
-            }
-            isActivated = true;
-            activePhone = raw;
-            document.getElementById('statusMsg').textContent = '✅ 激活成功！';
-            document.getElementById('statusMsg').className = 'status-msg success';
-            document.getElementById('statusBadge').textContent = `✅ ${raw}`;
-            document.getElementById('userInfo').classList.add('active');
-            document.getElementById('activePhoneDisplay').textContent = raw;
-            document.getElementById('activationArea').style.display = 'none';
-            saveData();
-            renderChapterList('theory');
-            renderWrongBook();
-            document.querySelectorAll('.tab').forEach(t => {
-                t.classList.remove('disabled');
-            });
-            showToast('🎉 激活成功！全部功能已解锁', 'success');
-            return true;
+    if (!phone || phone.trim() === '') {
+        document.getElementById('statusMsg').textContent = '⚠️ 请输入手机号';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+    const raw = phone.trim();
+    if (!/^\d{11}$/.test(raw)) {
+        document.getElementById('statusMsg').textContent = '❌ 请输入11位有效手机号';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+    
+    // ★ 新增：验证手机号是否在 GitHub Issues 中
+    try {
+        const REPO_OWNER = '51ruankao';
+        const REPO_NAME = 'xinchu';
+        const LABEL_ACTIVATED = '已激活';
+        // 注意：这里需要一个公开的 token 或使用代理
+        // 或者你可以使用 GitHub 公开 API（无需 token）
+        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
+        const response = await fetch(url);
+        if (!response.ok) throw new Error('验证服务不可用');
+        const issues = await response.json();
+        const phoneList = issues.map(issue => issue.title.trim());
+        
+        if (!phoneList.includes(raw)) {
+            document.getElementById('statusMsg').textContent = '❌ 该手机号未激活，请联系管理员';
+            document.getElementById('statusMsg').className = 'status-msg error';
+            return false;
         }
+        
+        // 验证通过
+        isActivated = true;
+        activePhone = raw;
+        document.getElementById('statusMsg').textContent = '✅ 激活成功！';
+        document.getElementById('statusMsg').className = 'status-msg success';
+        document.getElementById('statusBadge').textContent = `✅ ${raw}`;
+        document.getElementById('userInfo').classList.add('active');
+        document.getElementById('activePhoneDisplay').textContent = raw;
+        document.getElementById('activationArea').style.display = 'none';
+        saveData();
+        renderChapterList('theory');
+        renderWrongBook();
+        document.querySelectorAll('.tab').forEach(t => {
+            t.classList.remove('disabled');
+        });
+        showToast('🎉 激活成功！全部功能已解锁', 'success');
+        return true;
+        
+    } catch (error) {
+        document.getElementById('statusMsg').textContent = '⚠️ 验证服务暂不可用，请稍后重试';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+}
 
         function deactivate() {
             if (!confirm('确认退出？退出后历年真题和模拟考试将不可用')) return;
