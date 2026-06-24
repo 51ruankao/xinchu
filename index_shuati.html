@@ -12325,7 +12325,109 @@
         // ★★★ 激活/退出 ★★★
         // ================================================================
 
-// ★★★ 实际激活逻辑（抽离出来）★★★
+        // ================================================================
+// ★★★ JSONBin 配置 ★★★
+// ================================================================
+const JSONBIN_BIN_ID = '6a3bdc3fda38895dfef77918';
+const JSONBIN_API_KEY = '$2a$10$X0E9OX3GwZKdS1UitU9JieFyWt3/LGmWIEJQ0ZQ0A/Ey8RyFJKPu';
+const JSONBIN_URL = `https://api.jsonbin.io/v3/b/${JSONBIN_BIN_ID}`;
+
+// ================================================================
+// ★★★ 从 JSONBin 读取激活手机号列表 ★★★
+// ================================================================
+async function fetchActivatedPhones() {
+    try {
+        const response = await fetch(JSONBIN_URL, {
+            headers: {
+                'X-Master-Key': JSONBIN_API_KEY
+            }
+        });
+        if (!response.ok) {
+            throw new Error(`HTTP ${response.status}`);
+        }
+        const data = await response.json();
+        return data.record.phones || [];
+    } catch (error) {
+        console.error('读取激活列表失败:', error);
+        return [];
+    }
+}
+
+// ★★★ 激活函数（缓存优先） ★★★
+async function performActivation(phone) {
+    if (!phone || phone.trim() === '') {
+        document.getElementById('statusMsg').textContent = '⚠️ 请输入手机号';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+    const raw = phone.trim();
+    if (!/^\d{11}$/.test(raw)) {
+        document.getElementById('statusMsg').textContent = '❌ 请输入11位有效手机号';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+
+    // 检查缓存（24小时有效期）
+    const cacheKey = `ruankao_activate_${raw}`;
+    const cached = localStorage.getItem(cacheKey);
+    if (cached) {
+        try {
+            const data = JSON.parse(cached);
+            const now = Date.now();
+            if (now - data.time < 86400000) {
+                if (data.valid) {
+                    doActivate(raw);
+                    showToast('✅ 激活成功（缓存）', 'success');
+                    return true;
+                } else {
+                    document.getElementById('statusMsg').textContent = '❌ 该手机号未激活';
+                    document.getElementById('statusMsg').className = 'status-msg error';
+                    return false;
+                }
+            }
+        } catch (e) {}
+    }
+
+    document.getElementById('statusMsg').textContent = '⏳ 正在验证...';
+    document.getElementById('statusMsg').className = 'status-msg';
+
+    try {
+        const phoneList = await fetchActivatedPhones();
+        const isValid = phoneList.includes(raw);
+
+        localStorage.setItem(cacheKey, JSON.stringify({
+            valid: isValid,
+            time: Date.now()
+        }));
+
+        if (isValid) {
+            doActivate(raw);
+            showToast('🎉 激活成功！', 'success');
+            return true;
+        } else {
+            document.getElementById('statusMsg').textContent = '❌ 该手机号未激活，请联系管理员';
+            document.getElementById('statusMsg').className = 'status-msg error';
+            return false;
+        }
+    } catch (error) {
+        const oldCached = localStorage.getItem(cacheKey);
+        if (oldCached) {
+            try {
+                const oldData = JSON.parse(oldCached);
+                if (oldData.valid) {
+                    doActivate(raw);
+                    showToast('⚠️ 网络异常，使用缓存记录激活', 'success');
+                    return true;
+                }
+            } catch (e) {}
+        }
+        document.getElementById('statusMsg').textContent = '⚠️ 验证服务暂不可用，请检查网络后重试';
+        document.getElementById('statusMsg').className = 'status-msg error';
+        return false;
+    }
+}
+
+// ★★★ 实际激活执行 ★★★
 function doActivate(phone) {
     isActivated = true;
     activePhone = phone;
@@ -12342,123 +12444,6 @@ function doActivate(phone) {
         t.classList.remove('disabled');
     });
 }
-        // ★★★ 激活函数（缓存优先）★★★
-async function performActivation(phone) {
-    // ===== 1. 基础校验 =====
-    if (!phone || phone.trim() === '') {
-        document.getElementById('statusMsg').textContent = '⚠️ 请输入手机号';
-        document.getElementById('statusMsg').className = 'status-msg error';
-        return false;
-    }
-    const raw = phone.trim();
-    if (!/^\d{11}$/.test(raw)) {
-        document.getElementById('statusMsg').textContent = '❌ 请输入11位有效手机号';
-        document.getElementById('statusMsg').className = 'status-msg error';
-        return false;
-    }
-
-    // ===== 2. 检查缓存 =====
-    const cacheKey = `ruankao_activate_${raw}`;
-    const cached = localStorage.getItem(cacheKey);
-    
-    if (cached) {
-        try {
-            const data = JSON.parse(cached);
-            const now = Date.now();
-            // 缓存有效期 24 小时（86400000 毫秒）
-            if (now - data.time < 86400000) {
-                // 缓存有效
-                if (data.valid) {
-                    // ✅ 缓存有效且已验证通过 → 直接激活
-                    doActivate(raw);
-                    showToast('✅ 激活成功（缓存）', 'success');
-                    return true;
-                } else {
-                    // ❌ 缓存记录该号码无效
-                    document.getElementById('statusMsg').textContent = '❌ 该手机号未激活，请联系管理员';
-                    document.getElementById('statusMsg').className = 'status-msg error';
-                    return false;
-                }
-            }
-        } catch (e) {
-            // 缓存数据损坏，忽略继续请求
-            console.warn('缓存解析失败，重新验证');
-        }
-    }
-
-    // ===== 3. 缓存失效 → 请求 GitHub API =====
-    document.getElementById('statusMsg').textContent = '⏳ 正在验证...';
-    document.getElementById('statusMsg').className = 'status-msg';
-
-    try {
-        const REPO_OWNER = '51ruankao';
-        const REPO_NAME = 'xinchu';
-        const LABEL_ACTIVATED = '已激活';
-        const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
-        
-        // 带超时控制（8秒）
-        const controller = new AbortController();
-        const timeoutId = setTimeout(() => controller.abort(), 8000);
-        
-        const response = await fetch(url, { signal: controller.signal });
-        clearTimeout(timeoutId);
-        
-        if (!response.ok) {
-            throw new Error(`HTTP ${response.status}`);
-        }
-        
-        const issues = await response.json();
-        const phoneList = issues.map(issue => issue.title.trim());
-        const isValid = phoneList.includes(raw);
-        
-        // 存入缓存
-        localStorage.setItem(cacheKey, JSON.stringify({
-            valid: isValid,
-            time: Date.now()
-        }));
-        
-        if (isValid) {
-            // ✅ 验证通过
-            doActivate(raw);
-            showToast('🎉 激活成功！', 'success');
-            return true;
-        } else {
-            // ❌ 未激活
-            document.getElementById('statusMsg').textContent = '❌ 该手机号未激活，请联系管理员';
-            document.getElementById('statusMsg').className = 'status-msg error';
-            return false;
-        }
-        
-    } catch (error) {
-        // ===== 4. API 请求失败，尝试使用旧缓存（容灾） =====
-        console.warn('API 请求失败:', error.message);
-        
-        // 检查是否有旧缓存（即使过期也尝试用一下）
-        const oldCached = localStorage.getItem(cacheKey);
-        if (oldCached) {
-            try {
-                const oldData = JSON.parse(oldCached);
-                if (oldData.valid) {
-                    // 旧缓存显示有效 → 允许激活，但提示用户
-                    doActivate(raw);
-                    showToast('⚠️ 网络验证失败，使用缓存记录激活', 'success');
-                    // 更新时间戳，延长有效期
-                    localStorage.setItem(cacheKey, JSON.stringify({
-                        valid: true,
-                        time: Date.now()
-                    }));
-                    return true;
-                }
-            } catch (e) {}
-        }
-        
-        // 没有任何缓存，提示用户
-        document.getElementById('statusMsg').textContent = '⚠️ 验证服务暂不可用，请检查网络后重试';
-        document.getElementById('statusMsg').className = 'status-msg error';
-        return false;
-    }
-}
-
 
 
         function deactivate() {
