@@ -43,8 +43,8 @@
             margin-bottom: 12px;
         }
         .token-status {
-            font-size: 0.8rem;
-            padding: 8px 16px;
+            font-size: 0.85rem;
+            padding: 10px 20px;
             border-radius: 60px;
             margin-bottom: 20px;
             display: inline-block;
@@ -122,43 +122,38 @@
         .footer span {
             margin: 0 10px;
         }
-        .input-area {
-            background: #f8fafc;
-            border-radius: 60px;
-            padding: 4px 4px 4px 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1.5px solid #e8ecf0;
-            margin-bottom: 16px;
-        }
-        .input-area input {
-            flex: 1;
-            border: none;
-            padding: 10px 0;
+
+        /* ===== 电脑微信浏览器警告 ===== */
+        .wechat-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 14px 18px;
+            margin-bottom: 20px;
+            text-align: left;
             font-size: 0.82rem;
-            background: transparent;
-            outline: none;
-            min-width: 60px;
-            color: #1a2a3a;
+            color: #856404;
+            display: none;
         }
-        .input-area input::placeholder {
-            color: #b0c8d8;
+        .wechat-warning strong {
+            display: block;
+            font-size: 0.9rem;
+            margin-bottom: 2px;
         }
-        .input-area .btn-load {
+        .wechat-warning .btn-copy {
             background: #1a4d66;
             color: white;
             border: none;
-            padding: 8px 20px;
-            border-radius: 60px;
-            font-weight: 600;
+            border-radius: 6px;
+            padding: 4px 16px;
             font-size: 0.78rem;
             cursor: pointer;
-            white-space: nowrap;
+            margin-top: 6px;
         }
-        .input-area .btn-load:hover {
+        .wechat-warning .btn-copy:hover {
             background: #0f3f55;
         }
+
         @media (max-width: 480px) {
             .container {
                 padding: 30px 24px;
@@ -173,35 +168,24 @@
             .btn .icon {
                 font-size: 1.3rem;
             }
-            .input-area {
-                flex-wrap: wrap;
-                padding: 8px 8px 8px 14px;
-            }
-            .input-area input {
-                width: 100%;
-            }
-            .input-area .btn-load {
-                width: 100%;
-                justify-content: center;
-                padding: 10px;
-            }
         }
     </style>
 </head>
 <body>
 
     <div class="container">
+        <!-- 电脑微信浏览器警告 -->
+        <div class="wechat-warning" id="wechatWarning">
+            <strong>🖥️ 检测到电脑微信浏览器</strong>
+            <span>电脑微信内置浏览器可能无法正常播放视频，请复制链接到 Chrome 或 Edge 浏览器打开。</span>
+            <button class="btn-copy" onclick="copyPageUrl()">📋 复制链接</button>
+        </div>
+
         <div class="logo">软考<span>· 学习平台</span></div>
         <p class="subtitle">选择学习模式，点击进入</p>
 
-        <!-- Token 状态显示 -->
+        <!-- Token 状态 -->
         <div class="token-status" id="tokenStatus">⏳ 正在加载...</div>
-
-        <!-- Token 输入区（备用，用户也可手动输入） -->
-        <div class="input-area">
-            <input type="password" id="tokenInput" placeholder="输入激活码（可选）">
-            <button class="btn-load" id="loadBtn">🔓 加载</button>
-        </div>
 
         <!-- 按钮组 -->
         <div class="btn-group">
@@ -221,28 +205,26 @@
 
     <script>
         // ================================================================
-        // ★★★ 从 URL 获取 Token（核心） ★★★
+        // ★★★ 从 URL 获取 Token ★★★
         // ================================================================
         const urlParams = new URLSearchParams(window.location.search);
-        const TOKEN_FROM_URL = urlParams.get('token');
+        const TOKEN = urlParams.get('token');
 
-        const tokenInput = document.getElementById('tokenInput');
         const tokenStatus = document.getElementById('tokenStatus');
         const videoBtn = document.getElementById('videoBtn');
         const quizBtn = document.getElementById('quizBtn');
-        const loadBtn = document.getElementById('loadBtn');
 
         // ================================================================
-        // ★★★ 更新按钮状态 ★★★
+        // ★★★ 更新按钮 ★★★
         // ================================================================
-        function updateButtons(token) {
+        function activateButtons(token) {
             const cleanToken = token.trim();
             if (!cleanToken) {
                 videoBtn.classList.remove('active');
                 quizBtn.classList.remove('active');
                 videoBtn.href = '#';
                 quizBtn.href = '#';
-                tokenStatus.textContent = '⚠️ 请输入激活码';
+                tokenStatus.textContent = '⚠️ 缺少激活码，请检查链接';
                 tokenStatus.className = 'token-status error';
                 return;
             }
@@ -253,78 +235,57 @@
             quizBtn.classList.add('active');
             tokenStatus.textContent = '✅ 已激活，点击按钮进入学习';
             tokenStatus.className = 'token-status success';
-            // 同步到输入框
-            tokenInput.value = cleanToken;
         }
 
         // ================================================================
-        // ★★★ 加载 Token（优先 URL，其次 localStorage） ★★★
+        // ★★★ 电脑微信浏览器检测 ★★★
         // ================================================================
-        function loadToken(token) {
-            const raw = token.trim();
-            if (!raw) {
-                // 尝试从 localStorage 读取
-                try {
-                    const saved = localStorage.getItem('ruankao_platform_token');
-                    if (saved) {
-                        tokenInput.value = saved;
-                        updateButtons(saved);
-                        return;
-                    }
-                } catch (e) {}
-                updateButtons('');
-                return;
+        function isPCWechat() {
+            const ua = navigator.userAgent.toLowerCase();
+            return ua.indexOf('micromessenger') !== -1 && ua.indexOf('mobile') === -1;
+        }
+
+        function copyPageUrl() {
+            const url = window.location.href;
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(url).then(() => {
+                    alert('✅ 链接已复制！请粘贴到浏览器地址栏打开。');
+                }).catch(() => fallbackCopy(url));
+            } else {
+                fallbackCopy(url);
             }
-            // 保存到 localStorage 以便下次使用
-            try {
-                localStorage.setItem('ruankao_platform_token', raw);
-            } catch (e) {}
-            tokenInput.value = raw;
-            updateButtons(raw);
+        }
+
+        function fallbackCopy(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('✅ 链接已复制！');
+        }
+
+        // ================================================================
+        // ★★★ 显示微信警告 ★★★
+        // ================================================================
+        if (isPCWechat()) {
+            document.getElementById('wechatWarning').style.display = 'block';
         }
 
         // ================================================================
         // ★★★ 初始化 ★★★
         // ================================================================
-        // 1. 优先从 URL 读取 token
-        if (TOKEN_FROM_URL && TOKEN_FROM_URL.trim() !== '') {
+        if (TOKEN && TOKEN.trim() !== '') {
             tokenStatus.textContent = '✅ 正在加载激活码...';
             tokenStatus.className = 'token-status loading';
-            loadToken(TOKEN_FROM_URL);
+            activateButtons(TOKEN);
             console.log('✅ 从 URL 读取 Token 成功');
         } else {
-            // 2. 尝试从 localStorage 读取
-            try {
-                const saved = localStorage.getItem('ruankao_platform_token');
-                if (saved) {
-                    loadToken(saved);
-                    console.log('✅ 从 localStorage 读取 Token 成功');
-                } else {
-                    tokenStatus.textContent = '💡 请输入激活码';
-                    tokenStatus.className = 'token-status';
-                }
-            } catch (e) {
-                tokenStatus.textContent = '💡 请输入激活码';
-                tokenStatus.className = 'token-status';
-            }
+            tokenStatus.textContent = '⚠️ 缺少激活码，请检查链接';
+            tokenStatus.className = 'token-status error';
+            console.warn('⚠️ 缺少 token 参数');
         }
-
-        // ================================================================
-        // ★★★ 事件绑定（用户也可手动输入） ★★★
-        // ================================================================
-        loadBtn.addEventListener('click', function() {
-            loadToken(tokenInput.value);
-        });
-
-        tokenInput.addEventListener('keypress', function(e) {
-            if (e.key === 'Enter') {
-                e.preventDefault();
-                loadBtn.click();
-            }
-        });
-
-        console.log('✅ 软考学习平台已加载');
-        console.log('🔐 Token 来源: ' + (TOKEN_FROM_URL ? 'URL 参数' : 'localStorage / 手动输入'));
     </script>
 </body>
 </html>
