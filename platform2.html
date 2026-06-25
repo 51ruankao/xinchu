@@ -3,7 +3,7 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
-    <title>软考学习平台 · 入口</title>
+    <title>软考学习平台</title>
     <style>
         * {
             margin: 0;
@@ -23,7 +23,7 @@
             background: white;
             border-radius: 28px;
             padding: 48px 56px;
-            max-width: 520px;
+            max-width: 480px;
             width: 100%;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
             text-align: center;
@@ -32,34 +32,15 @@
             font-size: 1.8rem;
             font-weight: 700;
             color: #1a2a3a;
-            margin-bottom: 8px;
+            margin-bottom: 6px;
         }
         .logo span {
             color: #2f7a9e;
         }
         .subtitle {
             color: #6a8a9a;
-            font-size: 0.95rem;
-            margin-bottom: 12px;
-        }
-        .token-status {
-            font-size: 0.85rem;
-            padding: 10px 20px;
-            border-radius: 60px;
-            margin-bottom: 20px;
-            display: inline-block;
-        }
-        .token-status.loading {
-            background: #e3f0fa;
-            color: #1a4d66;
-        }
-        .token-status.success {
-            background: #dff0e6;
-            color: #1b6b4a;
-        }
-        .token-status.error {
-            background: #fde8e8;
-            color: #c0392b;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
         }
         .btn-group {
             display: flex;
@@ -79,31 +60,24 @@
             transition: 0.25s;
             border: none;
             cursor: pointer;
-            opacity: 0.4;
-            pointer-events: none;
-        }
-        .btn.active {
-            opacity: 1;
-            pointer-events: auto;
-        }
-        .btn.active:hover {
-            transform: translateY(-2px);
         }
         .btn-video {
             background: #1a4d66;
             color: white;
         }
-        .btn-video.active:hover {
-            box-shadow: 0 6px 24px rgba(26, 77, 102, 0.35);
+        .btn-video:hover {
             background: #0f3f55;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(26, 77, 102, 0.35);
         }
         .btn-quiz {
             background: #1f7a5a;
             color: white;
         }
-        .btn-quiz.active:hover {
-            box-shadow: 0 6px 24px rgba(31, 122, 90, 0.35);
+        .btn-quiz:hover {
             background: #146348;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(31, 122, 90, 0.35);
         }
         .btn .icon {
             font-size: 1.6rem;
@@ -112,32 +86,22 @@
             font-size: 1.2rem;
             opacity: 0.6;
         }
-        .footer {
-            margin-top: 28px;
-            padding-top: 20px;
-            border-top: 1px solid #eef2f7;
-            font-size: 0.75rem;
-            color: #8aaec2;
-        }
-        .footer span {
-            margin: 0 10px;
-        }
 
         /* ===== 电脑微信浏览器警告 ===== */
         .wechat-warning {
             background: #fff3cd;
             border: 2px solid #ffc107;
             border-radius: 12px;
-            padding: 14px 18px;
+            padding: 12px 16px;
             margin-bottom: 20px;
             text-align: left;
-            font-size: 0.82rem;
+            font-size: 0.8rem;
             color: #856404;
             display: none;
         }
         .wechat-warning strong {
             display: block;
-            font-size: 0.9rem;
+            font-size: 0.85rem;
             margin-bottom: 2px;
         }
         .wechat-warning .btn-copy {
@@ -145,8 +109,8 @@
             color: white;
             border: none;
             border-radius: 6px;
-            padding: 4px 16px;
-            font-size: 0.78rem;
+            padding: 4px 14px;
+            font-size: 0.75rem;
             cursor: pointer;
             margin-top: 6px;
         }
@@ -174,6 +138,7 @@
 <body>
 
     <div class="container">
+
         <!-- 电脑微信浏览器警告 -->
         <div class="wechat-warning" id="wechatWarning">
             <strong>🖥️ 检测到电脑微信浏览器</strong>
@@ -184,10 +149,6 @@
         <div class="logo">软考<span>· 学习平台</span></div>
         <p class="subtitle">选择学习模式，点击进入</p>
 
-        <!-- Token 状态 -->
-        <div class="token-status" id="tokenStatus">⏳ 正在加载...</div>
-
-        <!-- 按钮组 -->
         <div class="btn-group">
             <a id="videoBtn" class="btn btn-video">
                 <span class="icon">🎬</span> 看视频 <span class="arrow">→</span>
@@ -197,10 +158,6 @@
             </a>
         </div>
 
-        <div class="footer">
-            <span>🔐 激活码已自动携带</span>
-            <span>📱 手机 / 电脑 均可使用</span>
-        </div>
     </div>
 
     <script>
@@ -210,31 +167,25 @@
         const urlParams = new URLSearchParams(window.location.search);
         const TOKEN = urlParams.get('token');
 
-        const tokenStatus = document.getElementById('tokenStatus');
         const videoBtn = document.getElementById('videoBtn');
         const quizBtn = document.getElementById('quizBtn');
 
         // ================================================================
-        // ★★★ 更新按钮 ★★★
+        // ★★★ 设置按钮链接 ★★★
         // ================================================================
-        function activateButtons(token) {
-            const cleanToken = token.trim();
-            if (!cleanToken) {
-                videoBtn.classList.remove('active');
-                quizBtn.classList.remove('active');
-                videoBtn.href = '#';
-                quizBtn.href = '#';
-                tokenStatus.textContent = '⚠️ 缺少激活码，请检查链接';
-                tokenStatus.className = 'token-status error';
-                return;
-            }
-            const encoded = encodeURIComponent(cleanToken);
+        if (TOKEN && TOKEN.trim() !== '') {
+            const encoded = encodeURIComponent(TOKEN.trim());
             videoBtn.href = 'https://51ruankao.github.io/xinchu/index_shipin2.html?token=' + encoded;
             quizBtn.href = 'https://51ruankao.github.io/xinchu/index_shuati2.html?token=' + encoded;
-            videoBtn.classList.add('active');
-            quizBtn.classList.add('active');
-            tokenStatus.textContent = '✅ 已激活，点击按钮进入学习';
-            tokenStatus.className = 'token-status success';
+            console.log('✅ Token 已加载');
+        } else {
+            videoBtn.href = '#';
+            quizBtn.href = '#';
+            videoBtn.style.opacity = '0.4';
+            quizBtn.style.opacity = '0.4';
+            videoBtn.style.pointerEvents = 'none';
+            quizBtn.style.pointerEvents = 'none';
+            console.warn('⚠️ 缺少 token 参数');
         }
 
         // ================================================================
@@ -266,25 +217,8 @@
             alert('✅ 链接已复制！');
         }
 
-        // ================================================================
-        // ★★★ 显示微信警告 ★★★
-        // ================================================================
         if (isPCWechat()) {
             document.getElementById('wechatWarning').style.display = 'block';
-        }
-
-        // ================================================================
-        // ★★★ 初始化 ★★★
-        // ================================================================
-        if (TOKEN && TOKEN.trim() !== '') {
-            tokenStatus.textContent = '✅ 正在加载激活码...';
-            tokenStatus.className = 'token-status loading';
-            activateButtons(TOKEN);
-            console.log('✅ 从 URL 读取 Token 成功');
-        } else {
-            tokenStatus.textContent = '⚠️ 缺少激活码，请检查链接';
-            tokenStatus.className = 'token-status error';
-            console.warn('⚠️ 缺少 token 参数');
         }
     </script>
 </body>
