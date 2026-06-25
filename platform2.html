@@ -196,14 +196,24 @@
             return ua.indexOf('micromessenger') !== -1 && ua.indexOf('mobile') === -1;
         }
 
+        // ================================================================
+        // ★★★ 复制完整链接（带 Token） ★★★
+        // ================================================================
         function copyPageUrl() {
-            const url = window.location.href;
+            // 获取当前页面的完整 URL
+            let fullUrl = window.location.href;
+            
+            // 如果当前 URL 没有 token 参数，但我们已经读取到了 token，则手动拼接
+            if (TOKEN && TOKEN.trim() !== '' && !fullUrl.includes('token=')) {
+                fullUrl = window.location.origin + window.location.pathname + '?token=' + encodeURIComponent(TOKEN);
+            }
+            
             if (navigator.clipboard) {
-                navigator.clipboard.writeText(url).then(() => {
-                    alert('✅ 链接已复制！请粘贴到浏览器地址栏打开。');
-                }).catch(() => fallbackCopy(url));
+                navigator.clipboard.writeText(fullUrl).then(() => {
+                    alert('✅ 链接已复制！\n\n' + fullUrl + '\n\n请粘贴到浏览器地址栏打开。');
+                }).catch(() => fallbackCopy(fullUrl));
             } else {
-                fallbackCopy(url);
+                fallbackCopy(fullUrl);
             }
         }
 
@@ -214,9 +224,10 @@
             input.select();
             document.execCommand('copy');
             document.body.removeChild(input);
-            alert('✅ 链接已复制！');
+            alert('✅ 链接已复制！\n\n' + text + '\n\n请粘贴到浏览器地址栏打开。');
         }
 
+        // 显示微信警告
         if (isPCWechat()) {
             document.getElementById('wechatWarning').style.display = 'block';
         }
