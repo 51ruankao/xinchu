@@ -1,0 +1,292 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>软考学习平台</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+        body {
+            font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
+            background: #eef2f7;
+            min-height: 100vh;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            padding: 20px;
+        }
+        .container {
+            background: white;
+            border-radius: 28px;
+            padding: 48px 56px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
+            text-align: center;
+            position: relative;
+        }
+        .logo {
+            font-size: 1.8rem;
+            font-weight: 700;
+            color: #1a2a3a;
+            margin-bottom: 6px;
+        }
+        .logo span {
+            color: #2f7a9e;
+        }
+        .subtitle {
+            color: #6a8a9a;
+            font-size: 0.9rem;
+            margin-bottom: 28px;
+        }
+        .btn-group {
+            display: flex;
+            flex-direction: column;
+            gap: 14px;
+        }
+        .btn {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 12px;
+            padding: 18px 24px;
+            border-radius: 60px;
+            font-weight: 700;
+            font-size: 1.15rem;
+            text-decoration: none;
+            transition: 0.25s;
+            border: none;
+            cursor: pointer;
+        }
+        .btn-video {
+            background: #1a4d66;
+            color: white;
+        }
+        .btn-video:hover {
+            background: #0f3f55;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(26, 77, 102, 0.35);
+        }
+        .btn-quiz {
+            background: #1f7a5a;
+            color: white;
+        }
+        .btn-quiz:hover {
+            background: #146348;
+            transform: translateY(-2px);
+            box-shadow: 0 6px 24px rgba(31, 122, 90, 0.35);
+        }
+        .btn .icon {
+            font-size: 1.6rem;
+        }
+        .btn .arrow {
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
+
+        /* ===== 配套资料下载（低调） ===== */
+        .resources-section {
+            margin-top: 28px;
+            padding-top: 16px;
+            border-top: 1px solid #eef2f7;
+        }
+        .resources-link {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            color: #aab8c4;
+            font-size: 0.75rem;
+            text-decoration: none;
+            padding: 4px 12px;
+            border-radius: 40px;
+            transition: 0.2s;
+        }
+        .resources-link:hover {
+            color: #6a8a9a;
+            background: #f0f4f8;
+        }
+        .resources-link i {
+            font-size: 0.8rem;
+        }
+
+        /* ===== 版权信息 ===== */
+        .copyright {
+            margin-top: 12px;
+            color: #c5d0d9;
+            font-size: 0.6rem;
+            letter-spacing: 0.3px;
+        }
+
+        /* ===== 电脑微信浏览器警告 ===== */
+        .wechat-warning {
+            background: #fff3cd;
+            border: 2px solid #ffc107;
+            border-radius: 12px;
+            padding: 12px 16px;
+            margin-bottom: 20px;
+            text-align: left;
+            font-size: 0.8rem;
+            color: #856404;
+            display: none;
+        }
+        .wechat-warning strong {
+            display: block;
+            font-size: 0.85rem;
+            margin-bottom: 2px;
+        }
+        .wechat-warning .btn-copy {
+            background: #1a4d66;
+            color: white;
+            border: none;
+            border-radius: 6px;
+            padding: 4px 14px;
+            font-size: 0.75rem;
+            cursor: pointer;
+            margin-top: 6px;
+        }
+        .wechat-warning .btn-copy:hover {
+            background: #0f3f55;
+        }
+
+        @media (max-width: 480px) {
+            .container {
+                padding: 30px 24px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 14px 18px;
+            }
+            .btn .icon {
+                font-size: 1.3rem;
+            }
+            .resources-link {
+                font-size: 0.7rem;
+            }
+        }
+    </style>
+</head>
+<body>
+
+    <div class="container">
+
+        <!-- 电脑微信浏览器警告 -->
+        <div class="wechat-warning" id="wechatWarning">
+            <strong>🖥️ 检测到电脑微信浏览器</strong>
+            <span>电脑微信内置浏览器可能无法正常播放视频，请复制链接到 Chrome 或 Edge 浏览器打开。</span>
+            <button class="btn-copy" onclick="copyPageUrl()">📋 复制链接</button>
+        </div>
+
+        <div class="logo">信息处理技术员<span>· 学习平台</span></div>
+        <p class="subtitle">选择学习模式，点击进入</p>
+
+        <div class="btn-group">
+            <a id="videoBtn" class="btn btn-video">
+                <span class="icon">🎬</span> 看视频 <span class="arrow">→</span>
+            </a>
+            <a id="quizBtn" class="btn btn-quiz">
+                <span class="icon">📝</span> 刷题 <span class="arrow">→</span>
+            </a>
+        </div>
+
+        <!-- ===== 配套资料下载（低调，不喧宾夺主） ===== -->
+        <div class="resources-section">
+            <a class="resources-link" href="#" id="resourcesLink" target="_blank">
+                <span>📎</span> 配套资料下载
+            </a>
+        </div>
+
+        <!-- ===== 版权信息 ===== -->
+        <div class="copyright">橙多软考 © 版权所有 2026年</div>
+
+    </div>
+
+    <script>
+        // ================================================================
+        // ★★★ 从 URL 获取 Token ★★★
+        // ================================================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const TOKEN = urlParams.get('token');
+
+        const videoBtn = document.getElementById('videoBtn');
+        const quizBtn = document.getElementById('quizBtn');
+        const resourcesLink = document.getElementById('resourcesLink');
+
+        // ================================================================
+        // ★★★ 设置按钮链接 ★★★
+        // ================================================================
+        if (TOKEN && TOKEN.trim() !== '') {
+            const encoded = encodeURIComponent(TOKEN.trim());
+            videoBtn.href = 'https://51ruankao.github.io/xinchu/index_shipin.html?token=' + encoded;
+            quizBtn.href = 'https://51ruankao.github.io/xinchu/index_shuati.html?token=' + encoded;
+            console.log('✅ Token 已加载');
+        } else {
+            videoBtn.href = '#';
+            quizBtn.href = '#';
+            videoBtn.style.opacity = '0.4';
+            quizBtn.style.opacity = '0.4';
+            videoBtn.style.pointerEvents = 'none';
+            quizBtn.style.pointerEvents = 'none';
+            console.warn('⚠️ 缺少 token 参数');
+        }
+
+        // ================================================================
+        // ★★★ 设置配套资料下载链接（请替换为你的夸克网盘链接） ★★★
+        // ================================================================
+        // ★★★ 修改这里为你的夸克网盘链接 ★★★
+        const RESOURCES_URL = 'https://pan.quark.cn/s/f9da5621d2f5';
+
+        resourcesLink.href = RESOURCES_URL;
+        // 如果不想在新窗口打开，可以删除下面的 target 属性
+        resourcesLink.target = '_blank';
+
+        // ================================================================
+        // ★★★ 电脑微信浏览器检测 ★★★
+        // ================================================================
+        function isPCWechat() {
+            const ua = navigator.userAgent.toLowerCase();
+            return ua.indexOf('micromessenger') !== -1 && ua.indexOf('mobile') === -1;
+        }
+
+        // ================================================================
+        // ★★★ 复制完整链接（带 Token） ★★★
+        // ================================================================
+        function copyPageUrl() {
+            let fullUrl = window.location.href;
+            
+            if (TOKEN && TOKEN.trim() !== '' && !fullUrl.includes('token=')) {
+                fullUrl = window.location.origin + window.location.pathname + '?token=' + encodeURIComponent(TOKEN);
+            }
+            
+            if (navigator.clipboard) {
+                navigator.clipboard.writeText(fullUrl).then(() => {
+                    alert('✅ 链接已复制！\n\n' + fullUrl + '\n\n请粘贴到浏览器地址栏打开。');
+                }).catch(() => fallbackCopy(fullUrl));
+            } else {
+                fallbackCopy(fullUrl);
+            }
+        }
+
+        function fallbackCopy(text) {
+            const input = document.createElement('input');
+            input.value = text;
+            document.body.appendChild(input);
+            input.select();
+            document.execCommand('copy');
+            document.body.removeChild(input);
+            alert('✅ 链接已复制！\n\n' + text + '\n\n请粘贴到浏览器地址栏打开。');
+        }
+
+        // 显示微信警告
+        if (isPCWechat()) {
+            document.getElementById('wechatWarning').style.display = 'block';
+        }
+    </script>
+</body>
+</html>
