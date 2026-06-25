@@ -5,7 +5,11 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
     <title>软考学习平台 · 入口</title>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
         body {
             font-family: 'Segoe UI', Roboto, -apple-system, sans-serif;
             background: #eef2f7;
@@ -18,8 +22,8 @@
         .container {
             background: white;
             border-radius: 28px;
-            padding: 40px 44px;
-            max-width: 500px;
+            padding: 48px 56px;
+            max-width: 520px;
             width: 100%;
             box-shadow: 0 8px 40px rgba(0, 0, 0, 0.08);
             text-align: center;
@@ -28,72 +32,49 @@
             font-size: 1.8rem;
             font-weight: 700;
             color: #1a2a3a;
-            margin-bottom: 6px;
+            margin-bottom: 8px;
         }
-        .logo span { color: #2f7a9e; }
+        .logo span {
+            color: #2f7a9e;
+        }
         .subtitle {
             color: #6a8a9a;
-            font-size: 0.9rem;
-            margin-bottom: 24px;
-        }
-        .token-area {
-            background: #f8fafc;
-            border-radius: 60px;
-            padding: 6px 6px 6px 18px;
-            display: flex;
-            align-items: center;
-            gap: 8px;
-            border: 1.5px solid #e8ecf0;
-            margin-bottom: 20px;
-        }
-        .token-area input {
-            flex: 1;
-            border: none;
-            padding: 10px 0;
-            font-size: 0.85rem;
-            background: transparent;
-            outline: none;
-            min-width: 80px;
-        }
-        .token-area input::placeholder {
-            color: #b0c8d8;
-        }
-        .token-area .btn-load {
-            background: #1a4d66;
-            color: white;
-            border: none;
-            padding: 8px 20px;
-            border-radius: 60px;
-            font-weight: 600;
-            font-size: 0.8rem;
-            cursor: pointer;
-            white-space: nowrap;
-        }
-        .token-area .btn-load:hover {
-            background: #0f3f55;
+            font-size: 0.95rem;
+            margin-bottom: 12px;
         }
         .token-status {
-            font-size: 0.75rem;
-            color: #8aaec2;
-            margin-bottom: 16px;
-            min-height: 20px;
+            font-size: 0.8rem;
+            padding: 8px 16px;
+            border-radius: 60px;
+            margin-bottom: 20px;
+            display: inline-block;
         }
-        .token-status.success { color: #1f7a5a; }
-        .token-status.error { color: #c0392b; }
+        .token-status.loading {
+            background: #e3f0fa;
+            color: #1a4d66;
+        }
+        .token-status.success {
+            background: #dff0e6;
+            color: #1b6b4a;
+        }
+        .token-status.error {
+            background: #fde8e8;
+            color: #c0392b;
+        }
         .btn-group {
             display: flex;
             flex-direction: column;
-            gap: 12px;
+            gap: 14px;
         }
         .btn {
             display: flex;
             align-items: center;
             justify-content: center;
             gap: 12px;
-            padding: 16px 24px;
+            padding: 18px 24px;
             border-radius: 60px;
             font-weight: 700;
-            font-size: 1.1rem;
+            font-size: 1.15rem;
             text-decoration: none;
             transition: 0.25s;
             border: none;
@@ -124,23 +105,86 @@
             box-shadow: 0 6px 24px rgba(31, 122, 90, 0.35);
             background: #146348;
         }
-        .btn .icon { font-size: 1.5rem; }
-        .btn .arrow { font-size: 1.1rem; opacity: 0.6; }
+        .btn .icon {
+            font-size: 1.6rem;
+        }
+        .btn .arrow {
+            font-size: 1.2rem;
+            opacity: 0.6;
+        }
         .footer {
-            margin-top: 24px;
-            padding-top: 16px;
+            margin-top: 28px;
+            padding-top: 20px;
             border-top: 1px solid #eef2f7;
-            font-size: 0.7rem;
+            font-size: 0.75rem;
             color: #8aaec2;
         }
-        .footer span { margin: 0 10px; }
+        .footer span {
+            margin: 0 10px;
+        }
+        .input-area {
+            background: #f8fafc;
+            border-radius: 60px;
+            padding: 4px 4px 4px 18px;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+            border: 1.5px solid #e8ecf0;
+            margin-bottom: 16px;
+        }
+        .input-area input {
+            flex: 1;
+            border: none;
+            padding: 10px 0;
+            font-size: 0.82rem;
+            background: transparent;
+            outline: none;
+            min-width: 60px;
+            color: #1a2a3a;
+        }
+        .input-area input::placeholder {
+            color: #b0c8d8;
+        }
+        .input-area .btn-load {
+            background: #1a4d66;
+            color: white;
+            border: none;
+            padding: 8px 20px;
+            border-radius: 60px;
+            font-weight: 600;
+            font-size: 0.78rem;
+            cursor: pointer;
+            white-space: nowrap;
+        }
+        .input-area .btn-load:hover {
+            background: #0f3f55;
+        }
         @media (max-width: 480px) {
-            .container { padding: 24px 18px; }
-            .logo { font-size: 1.4rem; }
-            .btn { font-size: 0.95rem; padding: 13px 16px; }
-            .token-area { flex-wrap: wrap; padding: 8px 8px 8px 14px; }
-            .token-area input { width: 100%; }
-            .token-area .btn-load { width: 100%; justify-content: center; padding: 10px; }
+            .container {
+                padding: 30px 24px;
+            }
+            .logo {
+                font-size: 1.4rem;
+            }
+            .btn {
+                font-size: 1rem;
+                padding: 14px 18px;
+            }
+            .btn .icon {
+                font-size: 1.3rem;
+            }
+            .input-area {
+                flex-wrap: wrap;
+                padding: 8px 8px 8px 14px;
+            }
+            .input-area input {
+                width: 100%;
+            }
+            .input-area .btn-load {
+                width: 100%;
+                justify-content: center;
+                padding: 10px;
+            }
         }
     </style>
 </head>
@@ -148,14 +192,16 @@
 
     <div class="container">
         <div class="logo">软考<span>· 学习平台</span></div>
-        <p class="subtitle">输入激活码，解锁全部功能</p>
+        <p class="subtitle">选择学习模式，点击进入</p>
 
-        <!-- Token 输入区 -->
-        <div class="token-area">
-            <input type="password" id="tokenInput" placeholder="请输入激活码">
+        <!-- Token 状态显示 -->
+        <div class="token-status" id="tokenStatus">⏳ 正在加载...</div>
+
+        <!-- Token 输入区（备用，用户也可手动输入） -->
+        <div class="input-area">
+            <input type="password" id="tokenInput" placeholder="输入激活码（可选）">
             <button class="btn-load" id="loadBtn">🔓 加载</button>
         </div>
-        <div class="token-status" id="tokenStatus">💡 首次使用请输入激活码</div>
 
         <!-- 按钮组 -->
         <div class="btn-group">
@@ -168,32 +214,27 @@
         </div>
 
         <div class="footer">
-            <span>🔐 激活码保存在本地浏览器</span>
+            <span>🔐 激活码已自动携带</span>
             <span>📱 手机 / 电脑 均可使用</span>
         </div>
     </div>
 
     <script>
         // ================================================================
-        // 从 localStorage 读取已保存的 Token
+        // ★★★ 从 URL 获取 Token（核心） ★★★
         // ================================================================
-        function getStoredToken() {
-            try { return localStorage.getItem('ruankao_token') || ''; } catch(e) { return ''; }
-        }
+        const urlParams = new URLSearchParams(window.location.search);
+        const TOKEN_FROM_URL = urlParams.get('token');
 
-        function saveToken(token) {
-            try { localStorage.setItem('ruankao_token', token); } catch(e) {}
-        }
-
-        // ================================================================
-        // 更新按钮链接
-        // ================================================================
+        const tokenInput = document.getElementById('tokenInput');
+        const tokenStatus = document.getElementById('tokenStatus');
         const videoBtn = document.getElementById('videoBtn');
         const quizBtn = document.getElementById('quizBtn');
-        const tokenInput = document.getElementById('tokenInput');
         const loadBtn = document.getElementById('loadBtn');
-        const tokenStatus = document.getElementById('tokenStatus');
 
+        // ================================================================
+        // ★★★ 更新按钮状态 ★★★
+        // ================================================================
         function updateButtons(token) {
             const cleanToken = token.trim();
             if (!cleanToken) {
@@ -212,33 +253,64 @@
             quizBtn.classList.add('active');
             tokenStatus.textContent = '✅ 已激活，点击按钮进入学习';
             tokenStatus.className = 'token-status success';
+            // 同步到输入框
+            tokenInput.value = cleanToken;
         }
 
         // ================================================================
-        // 加载 Token
+        // ★★★ 加载 Token（优先 URL，其次 localStorage） ★★★
         // ================================================================
         function loadToken(token) {
             const raw = token.trim();
             if (!raw) {
+                // 尝试从 localStorage 读取
+                try {
+                    const saved = localStorage.getItem('ruankao_platform_token');
+                    if (saved) {
+                        tokenInput.value = saved;
+                        updateButtons(saved);
+                        return;
+                    }
+                } catch (e) {}
                 updateButtons('');
                 return;
             }
-            saveToken(raw);
+            // 保存到 localStorage 以便下次使用
+            try {
+                localStorage.setItem('ruankao_platform_token', raw);
+            } catch (e) {}
             tokenInput.value = raw;
             updateButtons(raw);
         }
 
         // ================================================================
-        // 初始化：自动加载已保存的 Token
+        // ★★★ 初始化 ★★★
         // ================================================================
-        const saved = getStoredToken();
-        if (saved) {
-            tokenInput.value = saved;
-            loadToken(saved);
+        // 1. 优先从 URL 读取 token
+        if (TOKEN_FROM_URL && TOKEN_FROM_URL.trim() !== '') {
+            tokenStatus.textContent = '✅ 正在加载激活码...';
+            tokenStatus.className = 'token-status loading';
+            loadToken(TOKEN_FROM_URL);
+            console.log('✅ 从 URL 读取 Token 成功');
+        } else {
+            // 2. 尝试从 localStorage 读取
+            try {
+                const saved = localStorage.getItem('ruankao_platform_token');
+                if (saved) {
+                    loadToken(saved);
+                    console.log('✅ 从 localStorage 读取 Token 成功');
+                } else {
+                    tokenStatus.textContent = '💡 请输入激活码';
+                    tokenStatus.className = 'token-status';
+                }
+            } catch (e) {
+                tokenStatus.textContent = '💡 请输入激活码';
+                tokenStatus.className = 'token-status';
+            }
         }
 
         // ================================================================
-        // 事件绑定
+        // ★★★ 事件绑定（用户也可手动输入） ★★★
         // ================================================================
         loadBtn.addEventListener('click', function() {
             loadToken(tokenInput.value);
@@ -252,7 +324,7 @@
         });
 
         console.log('✅ 软考学习平台已加载');
-        console.log('🔐 Token 存储在浏览器本地，不会泄露');
+        console.log('🔐 Token 来源: ' + (TOKEN_FROM_URL ? 'URL 参数' : 'localStorage / 手动输入'));
     </script>
 </body>
 </html>
