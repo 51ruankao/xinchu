@@ -11767,6 +11767,36 @@
                 }));
             } catch (e) {}
         }
+        // ================================================================
+// ★★★ 手机号本地存储 ★★★
+// ================================================================
+function savePhoneToLocal(phone) {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const data = JSON.parse(raw);
+            data.phone = phone;
+            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+        } else {
+            localStorage.setItem(STORAGE_KEY, JSON.stringify({
+                wrongBook: wrongBook,
+                userAnswers: userAnswers,
+                phone: phone
+            }));
+        }
+    } catch (e) {}
+}
+
+function getStoredPhone() {
+    try {
+        const raw = localStorage.getItem(STORAGE_KEY);
+        if (raw) {
+            const data = JSON.parse(raw);
+            return data.phone || '';
+        }
+    } catch (e) {}
+    return '';
+}
 
         // ================================================================
         // ★★★ 工具函数 ★★★
@@ -12384,7 +12414,8 @@
                     document.getElementById('userInfo').classList.add('active');
                     document.getElementById('activePhoneDisplay').textContent = raw;
                     document.getElementById('activationArea').style.display = 'none';
-                    saveData();
+                    // ★★★ 添加这行 ★★★
+                    savePhoneToLocal(raw);
                     renderChapterList('theory');
                     renderWrongBook();
                     document.querySelectorAll('.tab').forEach(t => {
@@ -12411,7 +12442,15 @@
             if (!confirm('确认退出？退出后全部功能将不可用')) return;
             isActivated = false;
             activePhone = '';
-            localStorage.removeItem(STORAGE_KEY);
+            // ★★★ 清除手机号 ★★★
+            try {
+                const raw = localStorage.getItem(STORAGE_KEY);
+                if (raw) {
+            const data = JSON.parse(raw);
+                            delete data.phone;
+                            localStorage.setItem(STORAGE_KEY, JSON.stringify(data));
+                        }
+                    } catch (e) {}
             document.getElementById('statusBadge').textContent = '📱 未激活';
             document.getElementById('userInfo').classList.remove('active');
             document.getElementById('activationArea').style.display = 'flex';
@@ -12439,10 +12478,7 @@
 
         async function tryAutoLogin() {
             try {
-                const raw = localStorage.getItem(STORAGE_KEY);
-                if (!raw) return false;
-                const data = JSON.parse(raw);
-                const storedPhone = data.phone;
+                const storedPhone = getStoredPhone();  // ★★★ 使用新函数 ★★★
                 if (!storedPhone) return false;
 
                 document.getElementById('statusMsg').textContent = '⏳ 自动验证中...';
