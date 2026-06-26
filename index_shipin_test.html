@@ -1,0 +1,1032 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=yes">
+    <title>信息处理技术员 · 视频学习</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Segoe UI', Roboto, sans-serif; }
+        body { background: linear-gradient(145deg, #f4f8fc 0%, #e6eef5 100%); min-height: 100vh; padding: 16px; }
+        .app-wrapper { max-width: 1200px; margin: 0 auto; background: rgba(255,255,255,0.65); backdrop-filter: blur(14px); border-radius: 40px; padding: 24px 20px; }
+        .header { display: flex; flex-wrap: wrap; justify-content: space-between; align-items: center; margin-bottom: 20px; padding-bottom: 14px; border-bottom: 2px dashed rgba(0,40,60,0.10); }
+        .logo-area { display: flex; align-items: center; gap: 10px; }
+        .logo-icon { background: #1a3b4f; color: white; width: 40px; height: 40px; border-radius: 14px; display: flex; align-items: center; justify-content: center; font-size: 20px; }
+        .logo-text { font-weight: 700; font-size: 1.5rem; color: #0a2a38; }
+        .logo-text span { color: #2f7a9e; font-weight: 300; }
+        .activation-badge { background: #ffffffcc; padding: 8px 18px; border-radius: 100px; font-weight: 500; color: #1f4b62; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
+
+        .activation-area { background: #ffffffdd; border-radius: 40px; padding: 16px 20px; margin-bottom: 24px; display: flex; flex-wrap: wrap; align-items: center; justify-content: center; gap: 14px 16px; border: 1px solid rgba(255,255,255,0.9); }
+        .activation-input-group { display: flex; flex-wrap: wrap; align-items: center; gap: 10px; flex: 2 1 280px; }
+        .activation-input-group label { font-weight: 600; color: #174052; font-size: 0.95rem; display: flex; align-items: center; gap: 6px; }
+        .activation-input-group input { flex: 1; min-width: 150px; padding: 12px 18px; border: 1.5px solid #d5e3ec; border-radius: 60px; font-size: 1rem; background: #f2f8fe; outline: none; }
+        .activation-input-group input:focus { border-color: #2f8db0; background: white; box-shadow: 0 0 0 4px rgba(47,141,176,0.15); }
+        .btn { background: #eef4f9; border: none; padding: 12px 28px; border-radius: 60px; font-weight: 600; font-size: 0.95rem; color: #1f4b62; cursor: pointer; display: inline-flex; align-items: center; gap: 8px; border: 1px solid rgba(255,255,255,0.6); }
+        .btn-primary { background: #1a4d66; color: white; border: 1px solid #2b6d8a; }
+        .btn-primary:hover { background: #0f3f55; transform: scale(1.02); }
+        .btn-danger { background: #b13e3e; color: white; border: 1px solid #8a2e2e; padding: 5px 14px; font-size: 0.8rem; }
+        .btn-danger:hover { background: #8a2e2e; transform: scale(1.02); }
+        .status-message { font-size: 0.9rem; padding: 5px 14px; border-radius: 40px; background: #e7f1f8; color: #1c5770; display: inline-flex; align-items: center; gap: 8px; font-weight: 500; }
+        .status-message.success { background: #dff0e6; color: #1b6b4a; }
+        .status-message.error { background: #ffe6e6; color: #b13e3e; }
+
+        .subject-folder { background: #ffffffdd; border-radius: 28px; margin-bottom: 20px; border: 1px solid rgba(255,255,255,0.8); overflow: hidden; }
+        .folder-header { display: flex; align-items: center; justify-content: space-between; padding: 14px 20px; cursor: pointer; border-radius: 28px; }
+        .folder-header:hover { background: rgba(200,220,240,0.15); }
+        .folder-header-left { display: flex; align-items: center; gap: 12px; }
+        .folder-header-left i { font-size: 1.4rem; color: #2f7a9e; width: 30px; text-align: center; }
+        .folder-header-left h2 { font-size: 1.2rem; font-weight: 700; color: #123b4f; }
+        .folder-header-left .badge-count { background: #c5dceb; padding: 3px 12px; border-radius: 40px; font-size: 0.7rem; font-weight: 600; color: #104257; margin-left: 6px; }
+        .folder-toggle { font-size: 1.1rem; color: #4f7f99; transition: transform 0.25s ease; }
+        .folder-toggle.open { transform: rotate(180deg); }
+        .folder-content { max-height: 0; overflow: hidden; transition: max-height 0.4s ease, padding 0.2s ease; padding: 0 20px; }
+        .folder-content.open { max-height: 5000px; padding: 0 20px 20px 20px; }
+
+        .sub-folder {
+            margin-left: 10px !important;
+            border-left: 3px solid #c5dceb !important;
+            padding-left: 10px !important;
+            border-radius: 16px !important;
+            margin-bottom: 12px !important;
+            background: rgba(255,255,255,0.4) !important;
+        }
+        .sub-folder .folder-header {
+            padding: 10px 14px !important;
+            border-radius: 16px !important;
+        }
+        .sub-folder .folder-header-left i {
+            font-size: 1rem !important;
+            width: 24px !important;
+        }
+        .sub-folder .folder-header-left h2 {
+            font-size: 1rem !important;
+        }
+        .sub-folder .folder-content {
+            padding: 0 8px !important;
+        }
+        .sub-folder .folder-content.open {
+            padding: 0 8px 12px 8px !important;
+        }
+
+        .video-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(280px,1fr)); gap: 18px; margin-top: 4px; }
+        .video-card { background: #ffffffdd; border-radius: 20px; padding: 12px; box-shadow: 0 4px 12px -6px rgba(0,30,40,0.04); border: 1px solid rgba(255,255,255,0.8); display: flex; flex-direction: column; }
+        .video-card:hover { transform: translateY(-2px); box-shadow: 0 12px 24px -10px rgba(0,50,70,0.12); border-color: #cce0ed; }
+        .video-thumbnail { position: relative; border-radius: 14px; overflow: hidden; background: #e8edf3; aspect-ratio: 16/9; display: flex; align-items: center; justify-content: center; margin-bottom: 10px; }
+        .video-thumbnail img { width: 100%; height: 100%; object-fit: cover; opacity: 0; transition: opacity 0.4s ease; background: #e8edf3; }
+        .video-thumbnail img.loaded { opacity: 1; }
+        .video-thumbnail .lock-overlay { position: absolute; inset: 0; background: rgba(10,30,42,0.45); backdrop-filter: blur(2px); display: flex; align-items: center; justify-content: center; font-size: 1.4rem; color: #ffd966; }
+        .video-thumbnail .lock-overlay i { position: static; }
+        .video-meta { flex: 1; display: flex; flex-direction: column; }
+        .video-title { font-weight: 700; font-size: 0.9rem; color: #12303f; margin-bottom: 2px; display: flex; align-items: center; justify-content: space-between; }
+        .video-title .section-num { font-size: 0.6rem; background: #dce8f2; padding: 2px 10px; border-radius: 40px; font-weight: 600; color: #1a4d66; }
+        .video-desc { color: #4d6f86; font-size: 0.75rem; margin-bottom: 6px; display: flex; align-items: center; gap: 4px; }
+        .video-desc i { color: #598aa8; font-size: 0.7rem; }
+        .video-player-container {
+            margin-top: 2px;
+            border-radius: 14px;
+            overflow: hidden;
+            background: #f0f4f8;
+            width: 100%;
+            aspect-ratio: 16/9;
+        }
+        .video-player-container video {
+            width: 100%;
+            height: 100%;
+            display: block;
+            background: #f0f4f8;
+            object-fit: contain;
+        }
+        .video-card.locked .video-player-container { display: none; }
+        .video-card.locked .video-player-placeholder { display: flex; }
+        .video-player-placeholder {
+            background: #eaf2f9;
+            border-radius: 60px;
+            padding: 8px 12px;
+            text-align: center;
+            font-weight: 500;
+            color: #21506a;
+            border: 1px dashed #b6d0e0;
+            margin-top: 2px;
+            font-size: 0.8rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 6px;
+            min-height: 40px;
+        }
+        .video-card.locked .video-player-placeholder { background: #f2f2f2; color: #7d7d7d; border-color: #d6d6d6; }
+        .video-card.locked .video-player-placeholder i { color: #a0a0a0; }
+        .unlock-hint { margin-top: 6px; font-size: 0.65rem; color: #5f7e93; background: #eaf3fa; padding: 2px 12px; border-radius: 60px; display: inline-block; align-self: flex-start; }
+        .video-card.locked .unlock-hint i { color: #a0b8c9; }
+        .footer-note { margin-top: 32px; text-align: center; color: #406b81; font-size: 0.8rem; border-top: 1px solid rgba(0,0,0,0.03); padding-top: 20px; display: flex; flex-wrap: wrap; justify-content: center; gap: 14px; }
+        .footer-note i { margin-right: 4px; color: #2d7a9e; }
+        .toast { position: fixed; bottom: 20px; left: 50%; transform: translateX(-50%); background: #1a2a38; color: white; padding: 12px 24px; border-radius: 60px; font-weight: 500; z-index: 999; opacity: 0; transition: opacity 0.4s; pointer-events: none; font-size: 0.9rem; }
+        .toast.show { opacity: 1; }
+        .toast.success { background: #1f7a5a; }
+        .toast.error { background: #b13e3e; }
+        .activated-user { display: inline-flex; align-items: center; gap: 10px; background: #dff0e6; padding: 6px 16px; border-radius: 60px; color: #1b6b4a; font-weight: 500; margin: 0 auto; font-size: 0.9rem; }
+        .activated-user i { color: #1b6b4a; }
+        .remembered-area { text-align: center; margin-bottom: 16px; display: none; }
+
+        .subject-title-area {
+            text-align: center;
+            margin-bottom: 24px;
+            padding: 16px;
+            background: linear-gradient(135deg, rgba(26,77,102,0.08), rgba(47,141,176,0.08));
+            border-radius: 20px;
+            border: 1px solid rgba(47,141,176,0.15);
+        }
+        .subject-title-area h1 {
+            font-size: 1.6rem;
+            color: #0a2a38;
+        }
+        .subject-title-area h1 i {
+            color: #2f7a9e;
+            margin-right: 12px;
+        }
+        .subject-title-area p {
+            color: #4d6f86;
+            font-size: 0.9rem;
+            margin-top: 4px;
+        }
+
+        .video-thumbnail .placeholder-shimmer {
+            position: absolute;
+            inset: 0;
+            background: linear-gradient(90deg, #e8edf3 25%, #d5dce6 50%, #e8edf3 75%);
+            background-size: 200% 100%;
+            animation: shimmer 1.5s infinite;
+            z-index: 0;
+        }
+        @keyframes shimmer {
+            0% { background-position: -200% 0; }
+            100% { background-position: 200% 0; }
+        }
+        .video-thumbnail img {
+            position: relative;
+            z-index: 1;
+        }
+
+        @media (max-width: 600px) {
+            body { padding: 10px; }
+            .app-wrapper { padding: 16px 12px; border-radius: 28px; }
+            .header { flex-direction: column; align-items: stretch; gap: 10px; }
+            .logo-text { font-size: 1.2rem; }
+
+            .activation-area {
+                padding: 6px 10px !important;
+                gap: 4px !important;
+                border-radius: 20px !important;
+            }
+
+            .status-message {
+                font-size: 0.7rem !important;
+                padding: 2px 8px !important;
+            }
+
+            .activation-input-group label {
+                display: none !important;
+            }
+
+            .activation-input-group {
+                display: flex !important;
+                flex-direction: row !important;
+                flex-wrap: wrap !important;
+                align-items: center !important;
+                gap: 4px !important;
+            }
+            .activation-input-group input {
+                flex: 1 !important;
+                min-width: 60px !important;
+                padding: 4px 10px !important;
+                font-size: 0.75rem !important;
+                height: 30px !important;
+                border: 1.5px solid #d5e3ec !important;
+                border-radius: 40px !important;
+                background: #f2f8fe !important;
+                outline: none !important;
+            }
+            .activation-input-group .btn {
+                flex: 0 0 auto !important;
+                padding: 4px 12px !important;
+                font-size: 0.7rem !important;
+                height: 30px !important;
+            }
+
+            .folder-header { padding: 12px 14px; }
+            .folder-header-left h2 { font-size: 1rem; }
+            .folder-content { padding: 0 14px; }
+            .folder-content.open { padding: 0 14px 14px 14px; }
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 12px;
+            }
+            .video-card { padding: 8px; border-radius: 14px; }
+            .video-thumbnail { border-radius: 10px; }
+            .video-title { font-size: 0.8rem; flex-wrap: wrap; gap: 2px; }
+            .video-title .section-num { font-size: 0.5rem; padding: 1px 8px; }
+            .video-desc { font-size: 0.65rem; }
+            .video-player-placeholder { font-size: 0.65rem; padding: 4px 8px; min-height: 30px; }
+            .unlock-hint { font-size: 0.55rem; padding: 1px 8px; }
+            .activation-badge { font-size: 0.75rem; padding: 6px 14px; }
+            .footer-note { font-size: 0.7rem; gap: 10px; }
+            .activated-user { font-size: 0.8rem; padding: 4px 12px; }
+            .toast { font-size: 0.8rem; padding: 10px 18px; bottom: 16px; }
+            .subject-title-area h1 { font-size: 1.2rem; }
+            .subject-title-area p { font-size: 0.8rem; }
+            .sub-folder {
+                margin-left: 4px !important;
+                padding-left: 6px !important;
+            }
+        }
+
+        @media (max-width: 400px) {
+            .video-grid {
+                grid-template-columns: 1fr;
+                gap: 10px;
+            }
+            .video-title { font-size: 0.75rem; }
+            .video-desc { font-size: 0.6rem; }
+            .activation-input-group input {
+                min-width: 50px !important;
+                padding: 3px 8px !important;
+                font-size: 0.7rem !important;
+                height: 26px !important;
+            }
+            .activation-input-group .btn {
+                padding: 3px 10px !important;
+                font-size: 0.65rem !important;
+                height: 26px !important;
+            }
+            .sub-folder {
+                margin-left: 2px !important;
+                padding-left: 4px !important;
+            }
+            .sub-folder .folder-header {
+                padding: 6px 10px !important;
+            }
+            .sub-folder .folder-header-left h2 {
+                font-size: 0.85rem !important;
+            }
+        }
+    </style>
+</head>
+<body>
+<div class="app-wrapper">
+    <header class="header">
+        <div class="logo-area">
+            <div class="logo-icon"><i class="fas fa-file-alt"></i></div>
+            <div class="logo-text">信息处理技术员<span>· 视频课堂</span></div>
+        </div>
+        <div class="activation-badge">
+            <i class="fas fa-shield-alt"></i>
+            <span>状态: <span id="globalStatusText">未激活</span></span>
+        </div>
+    </header>
+
+    <div class="subject-title-area">
+        <h1><i class="fas fa-graduation-cap"></i>信息处理技术员</h1>
+        <p><i class="fas fa-video"></i> 学前必看 · 实操 · 理论 · 题目讲解 · 难点回顾</p>
+    </div>
+
+    <div class="activation-area" id="activationArea" style="padding: 6px 10px !important; gap: 4px !important; border-radius: 20px !important;">
+        <div class="activation-input-group" style="display: flex !important; flex-direction: row !important; flex-wrap: wrap !important; align-items: center !important; gap: 4px !important;">
+            <label for="phoneInput" style="display: none !important;"><i class="fas fa-phone-alt"></i> 手机号</label>
+            <input type="tel" id="phoneInput" placeholder="输入报名时提供的手机号码" maxlength="11" style="flex: 1 !important; min-width: 60px !important; padding: 4px 10px !important; font-size: 0.75rem !important; height: 30px !important; border: 1.5px solid #d5e3ec !important; border-radius: 40px !important; background: #f2f8fe !important; outline: none !important;">
+            <button class="btn btn-primary" id="activateBtn" style="flex: 0 0 auto !important; padding: 4px 12px !important; font-size: 0.7rem !important; height: 30px !important; background: #1a4d66 !important; color: white !important; border: 1px solid #2b6d8a !important; border-radius: 60px !important; cursor: pointer !important;"><i class="fas fa-unlock"></i> 激活</button>
+        </div>
+        <div id="statusMessage" class="status-message" style="font-size: 0.7rem !important; padding: 2px 8px !important;">
+            <i class="fas fa-info-circle"></i> 输入手机号激活
+        </div>
+    </div>
+
+    <div class="remembered-area" id="rememberedArea">
+        <div class="activated-user">
+            <i class="fas fa-check-circle"></i>
+            <span>当前已激活: <strong id="rememberedPhoneDisplay"></strong></span>
+            <button class="btn btn-danger" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> 退出</button>
+        </div>
+    </div>
+
+    <div id="subjectContainer"></div>
+
+    <div class="footer-note">
+        <span><i class="fas fa-mobile-alt"></i> 手机 / 电脑 均可观看</span>
+    </div>
+</div>
+
+<div class="toast" id="toast"></div>
+
+<script>
+    (function() {
+        // ================================================================
+        // ★★★ GitHub 配置 ★★★
+        // ================================================================
+        const urlParams = new URLSearchParams(window.location.search);
+        const GITHUB_TOKEN = urlParams.get('token');
+        if (!GITHUB_TOKEN) {
+            document.body.innerHTML = '<div style="padding:50px;text-align:center;font-size:18px;color:#b13e3e;">⚠️ 缺少 token 参数<br><br><small>访问格式: index.html?token=你的Token</small></div>';
+            throw new Error('缺少 token 参数');
+        }
+
+        const REPO_OWNER = '51ruankao';
+        const REPO_NAME = 'xinchu';
+        const LABEL_ACTIVATED = '已激活';
+        const STORAGE_KEY = 'xinxichuli_activated_phone';
+
+        // ================================================================
+        // ★★★ 视频和封面图托管在七牛云 ★★★
+        // ================================================================
+        const isMobile = /Android|iPhone|iPad|iPod/i.test(navigator.userAgent);
+        const PROTOCOL = isMobile ? 'http://' : 'https://';
+        const BASE_VIDEO_URL = PROTOCOL + 'cddsw.zyzcc.cn/xinxichuliyuan/';
+        const BASE_POSTER_URL = PROTOCOL + 'cddsw.zyzcc.cn/xinxichuliyuan/posters/';
+        console.log('📱 当前设备:', isMobile ? '手机' : '电脑', '使用协议:', PROTOCOL);
+
+        // ================================================================
+        // ★★★ 核心验证函数：从 GitHub Issues 读取已激活手机号列表 ★★★
+        // ================================================================
+        async function fetchActivatedPhoneList() {
+            const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
+            const response = await fetch(url, {
+                headers: {
+                    'Authorization': `token ${GITHUB_TOKEN}`,
+                    'Accept': 'application/vnd.github.v3+json'
+                }
+            });
+            if (!response.ok) {
+                throw new Error(`GitHub API 错误: ${response.status}`);
+            }
+            const issues = await response.json();
+            // 返回所有已激活的手机号列表
+            return issues.map(issue => issue.title.trim());
+        }
+
+        // ★★★ 检查手机号是否在激活列表中（严格验证） ★★★
+        async function checkPhoneIsActivated(phone) {
+            const list = await fetchActivatedPhoneList();
+            return list.includes(phone.trim());
+        }
+
+        // ================================================================
+        // ★★★ 科目数据（五类，一级/二级混合） ★★★
+        // ================================================================
+        const categories = [
+            {
+                id: 'bikan',
+                name: '学前必看',
+                icon: 'fa-eye',
+                isLeaf: true,
+                poster: 'bikan.jpg',
+                videos: [
+                    { title: '必看01', desc: '必看内容（一）', filename: 'bikan01.mp4' },
+                    { title: '必看02', desc: '必看内容（二）', filename: 'bikan02.mp4' }
+                ]
+            },
+            {
+                id: 'shicao',
+                name: '实操部分',
+                icon: 'fa-laptop',
+                children: [
+                    {
+                        id: 'word',
+                        name: 'Word',
+                        icon: 'fa-file-word',
+                        poster: 'word.jpg',
+                        videos: [
+                            { title: '实操Word01', desc: '水电费清单', filename: 'word01shuidianfei.mp4' },
+                            { title: '实操Word02', desc: '一滴水经过丽江', filename: 'word02lijiang.mp4' },
+                            { title: '实操Word03', desc: '固定资产申请单', filename: 'word03shenqingbiao.mp4' },
+                            { title: '实操Word04', desc: '物流管理概述', filename: 'word04wuliu.mp4' },
+                            { title: '实操Word05', desc: '学生外语课程学习评价表', filename: 'word05waiyu.mp4' },
+                            { title: '实操Word06', desc: '沧浪亭', filename: 'word06canglangting.mp4' },
+                            { title: '实操Word07', desc: 'PM2.5', filename: 'word07keli.mp4' },
+                            { title: '实操Word08', desc: '个人简历', filename: 'word08jianli.mp4' },
+                            { title: '实操Word09', desc: '玫瑰花', filename: 'word09meigui.mp4' },
+                            { title: '实操Word10', desc: '个人简历', filename: 'word10jianli.mp4' },
+                            { title: '实操Word11', desc: '山地之旅（一）贵州', filename: 'word11guizhou.mp4' },
+                            { title: '实操Word12', desc: '面试评定表', filename: 'word12mianshi.mp4' },
+                            { title: '实操Word13', desc: '青海湖环湖赛', filename: 'word13qinghaihu.mp4' },
+                            { title: '实操Word14', desc: '应聘人员登记表', filename: 'word14yingpin.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'excel',
+                        name: 'Excel',
+                        icon: 'fa-table',
+                        poster: 'excel.jpg',
+                        videos: [
+                            { title: '实操Excel01', desc: '学生成绩表', filename: 'excel01chengji.mp4' },
+                            { title: '实操Excel02', desc: '期末考试计算机成绩表', filename: 'excel02jisuanji.mp4' },
+                            { title: '实操Excel03', desc: '2019级部分学生成绩表', filename: 'excel03chengji.mp4' },
+                            { title: '实操Excel04', desc: '成绩表', filename: 'excel04chengji.mp4' },
+                            { title: '实操Excel05', desc: '学生成绩表', filename: 'excel05chengji.mp4' },
+                            { title: '实操Excel06', desc: '体育测试跳远成绩表', filename: 'excel06tiyu.mp4' },
+                            { title: '实操Excel07', desc: '学生成绩表', filename: 'excel07chengji.mp4' },
+                            { title: '实操Excel08', desc: '学生成绩表', filename: 'excel08chengji.mp4' },
+                            { title: '实操Excel09', desc: '跳远预赛成绩表', filename: 'excel09tiaoyuan.mp4' },
+                            { title: '实操Excel10', desc: '期中考试数学成绩表', filename: 'excel10shuxue.mp4' },
+                            { title: '实操Excel11', desc: '学生成绩表', filename: 'excel11chengji.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'ppt',
+                        name: 'PPT',
+                        icon: 'fa-file-powerpoint',
+                        poster: 'ppt.jpg',
+                        videos: [
+                            { title: '实操PPT01', desc: '庆祝中华人民共和国成立70周年', filename: 'ppt01yuebing.mp4' },
+                            { title: '实操PPT02', desc: '烈火英雄', filename: 'ppt02yingxiong.mp4' },
+                            { title: '实操PPT03', desc: '四个全面', filename: 'ppt03quanmian.mp4' },
+                            { title: '实操PPT04', desc: '中国共产党第十九次全国代表大会', filename: 'ppt04dahui.mp4' },
+                            { title: '实操PPT05', desc: '中国制造2025', filename: 'ppt05zhizhao.mp4' },
+                            { title: '实操PPT06', desc: '临洞庭上张丞相', filename: 'ppt06dongtinghu.mp4' },
+                            { title: '实操PPT07', desc: '人生就是如此', filename: 'ppt07rensheng.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'access',
+                        name: 'Access',
+                        icon: 'fa-database',
+                        poster: 'access.jpg',
+                        videos: [
+                            { title: '实操Access01', desc: '个人表 / 考勤记录表 / 员工考勤统计表', filename: 'access01.mp4' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'lilun',
+                name: '理论部分',
+                icon: 'fa-book-open',
+                children: [
+                    {
+                        id: 'lilun_jichu',
+                        name: '信息处理基础',
+                        icon: 'fa-book',
+                        poster: 'lilun_jichu.jpg',
+                        videos: [
+                            { title: '理论01', desc: '信息处理基础（一）', filename: '01xinxi01.mp4' },
+                            { title: '理论01', desc: '信息处理基础（二）', filename: '01xinxi02.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_xitong',
+                        name: '系统基础知识',
+                        icon: 'fa-cogs',
+                        poster: 'lilun_xitong.jpg',
+                        videos: [
+                            { title: '理论02', desc: '系统基础知识（一）', filename: '02xitong01.mp4' },
+                            { title: '理论02', desc: '系统基础知识（二）', filename: '02xitong02.mp4' },
+                            { title: '理论02', desc: '系统基础知识（三）', filename: '02xitong03.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_os',
+                        name: '操作系统知识',
+                        icon: 'fa-window-restore',
+                        poster: 'lilun_os.jpg',
+                        videos: [
+                            { title: '理论03', desc: '操作系统知识（一）', filename: '03os01.mp4' },
+                            { title: '理论03', desc: '操作系统知识（二）', filename: '03os02.mp4' },
+                            { title: '理论03', desc: '操作系统知识（三）', filename: '03os03.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_word',
+                        name: '文字处理基础',
+                        icon: 'fa-file-alt',
+                        poster: 'lilun_word.jpg',
+                        videos: [
+                            { title: '理论04', desc: '文字处理基础（一）', filename: '04word01.mp4' },
+                            { title: '理论04', desc: '文字处理基础（二）', filename: '04word02.mp4' },
+                            { title: '理论04', desc: '文字处理基础（三）', filename: '04word03.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_excel',
+                        name: '电子表格处理',
+                        icon: 'fa-table',
+                        poster: 'lilun_excel.jpg',
+                        videos: [
+                            { title: '理论05', desc: '电子表格处理（一）', filename: '05excel01.mp4' },
+                            { title: '理论05', desc: '电子表格处理（二）', filename: '05excel02.mp4' },
+                            { title: '理论05', desc: '电子表格处理（三）', filename: '05excel03.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_ppt_db',
+                        name: '演示文稿 & 数据库',
+                        icon: 'fa-layer-group',
+                        poster: 'lilun_ppt_db.jpg',
+                        videos: [
+                            { title: '理论06', desc: '演示文稿基础', filename: '06ppt.mp4' },
+                            { title: '理论06', desc: '数据库的操作', filename: '07db.mp4' }
+                        ]
+                    },
+                    {
+                        id: 'lilun_network',
+                        name: '网络 & 安全',
+                        icon: 'fa-shield-alt',
+                        poster: 'lilun_network.jpg',
+                        videos: [
+                            { title: '理论07', desc: '网络与互联网', filename: '08wangluo.mp4' },
+                            { title: '理论07', desc: '安全法律法规', filename: '09fagui.mp4' }
+                        ]
+                    }
+                ]
+            },
+            {
+                id: 'timu',
+                name: '题目讲解',
+                icon: 'fa-puzzle-piece',
+                isLeaf: true,
+                poster: 'timu.jpg',
+                videos: [
+                    { title: '题目01', desc: '课后练习（一）', filename: '01kehou.mp4' },
+                    { title: '题目02', desc: '课后练习（二）', filename: '02kehou.mp4' },
+                    { title: '题目03', desc: '课后练习（三）', filename: '03kehou.mp4' },
+                    { title: '题目04', desc: '2019 真题（一）', filename: '2019zhenti01.mp4' },
+                    { title: '题目05', desc: '2019 真题（二）', filename: '2019zhenti02.mp4' },
+                    { title: '题目06', desc: '2019 真题（三）', filename: '2019zhenti03.mp4' },
+                    { title: '题目07', desc: '2019 真题（四）', filename: '2019zhenti04.mp4' }
+                ]
+            },
+            {
+                id: 'nandian',
+                name: '难点回顾',
+                icon: 'fa-star',
+                isLeaf: true,
+                poster: 'nandian.jpg',
+                videos: [
+                    { title: '难点01', desc: '函数难点（一）', filename: 'function01.mp4' },
+                    { title: '难点02', desc: '函数难点（二）', filename: 'function02.mp4' }
+                ]
+            }
+        ];
+
+        function getVideoUrl(filename) {
+            return BASE_VIDEO_URL + filename;
+        }
+
+        function getPosterUrl(filename) {
+            return BASE_POSTER_URL + filename;
+        }
+
+        // ================================================================
+        // ★★★ 全局视频管理 ★★★
+        // ================================================================
+        let allVideos = [];
+
+        function pauseAllOtherVideos(currentVideo) {
+            allVideos.forEach(function(video) {
+                if (video !== currentVideo && !video.paused) {
+                    video.pause();
+                }
+            });
+        }
+
+        // ================================================================
+        // ★★★ 图片懒加载（首屏只加载第一张图） ★★★
+        // ================================================================
+        function initLazyLoading() {
+            const images = document.querySelectorAll('.video-thumbnail img');
+            
+            if (!('IntersectionObserver' in window)) {
+                images.forEach(img => {
+                    img.src = img.dataset.src || img.src;
+                    img.classList.add('loaded');
+                });
+                return;
+            }
+
+            const imageObserver = new IntersectionObserver((entries) => {
+                entries.forEach(entry => {
+                    if (entry.isIntersecting) {
+                        const img = entry.target;
+                        if (!img.src || img.src === '' || img.src === window.location.href) {
+                            img.src = img.dataset.src || img.getAttribute('data-src');
+                        }
+                        img.onload = function() {
+                            this.classList.add('loaded');
+                        };
+                        if (img.complete) {
+                            img.classList.add('loaded');
+                        }
+                        imageObserver.unobserve(img);
+                    }
+                });
+            }, {
+                rootMargin: '300px 0px 300px 0px',
+                threshold: 0.01
+            });
+
+            images.forEach(img => {
+                const rect = img.getBoundingClientRect();
+                const isFirstScreen = rect.top < window.innerHeight + 100;
+                
+                if (isFirstScreen) {
+                    img.src = img.dataset.src || img.src;
+                    img.onload = function() {
+                        this.classList.add('loaded');
+                    };
+                    if (img.complete) {
+                        img.classList.add('loaded');
+                    }
+                } else {
+                    imageObserver.observe(img);
+                }
+            });
+        }
+
+        // ================================================================
+        // localStorage 操作
+        // ================================================================
+        function getStoredPhone() {
+            try { return localStorage.getItem(STORAGE_KEY) || ''; } catch(e) { return ''; }
+        }
+        function setStoredPhone(phone) {
+            try { localStorage.setItem(STORAGE_KEY, phone); } catch(e) {}
+        }
+        function clearStoredPhone() {
+            try { localStorage.removeItem(STORAGE_KEY); } catch(e) {}
+        }
+
+        // ================================================================
+        // DOM 操作
+        // ================================================================
+        const container = document.getElementById('subjectContainer');
+        const phoneInput = document.getElementById('phoneInput');
+        const activateBtn = document.getElementById('activateBtn');
+        const statusMsg = document.getElementById('statusMessage');
+        const globalStatusText = document.getElementById('globalStatusText');
+        const toast = document.getElementById('toast');
+        const rememberedArea = document.getElementById('rememberedArea');
+        const rememberedPhoneDisplay = document.getElementById('rememberedPhoneDisplay');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const activationArea = document.getElementById('activationArea');
+
+        let isActivated = false;
+        let activePhone = '';
+        let toastTimer = null;
+
+        function showToast(message, type) {
+            toast.textContent = message;
+            toast.className = 'toast';
+            if (type === 'success') toast.classList.add('success');
+            if (type === 'error') toast.classList.add('error');
+            toast.classList.add('show');
+            clearTimeout(toastTimer);
+            toastTimer = setTimeout(() => toast.classList.remove('show'), 3000);
+        }
+
+        function setStatus(message, type) {
+            statusMsg.innerHTML = message;
+            statusMsg.className = 'status-message';
+            if (type === 'success') statusMsg.classList.add('success');
+            if (type === 'error') statusMsg.classList.add('error');
+        }
+
+        // ================================================================
+        // ★★★ 渲染函数（首屏只加载第一张图） ★★★
+        // ================================================================
+function renderCategories(activated) {
+    if (!container) return;
+    let html = '';
+    let folderIndex = 0;
+
+    categories.forEach((cat) => {
+        if (cat.isLeaf) {
+            const total = cat.videos.length;
+            const poster = getPosterUrl(cat.poster);
+            const imgSrcAttr = folderIndex === 0 ? `src="${poster}"` : `data-src="${poster}"`;
+            folderIndex++;
+            html += `<div class="subject-folder"><div class="folder-header" data-target="${cat.id}">
+                <div class="folder-header-left"><i class="fas ${cat.icon}"></i><h2>${cat.name}</h2><span class="badge-count">${total} 节</span></div>
+                <div class="folder-toggle" data-target="${cat.id}"><i class="fas fa-chevron-down"></i></div>
+            </div><div class="folder-content" id="content-${cat.id}"><div class="video-grid">`;
+            cat.videos.forEach((v, i) => {
+                const unlocked = activated;
+                const videoUrl = getVideoUrl(v.filename);
+                // ★★★ 关键：视频标签不设置 src，用 data-src 保存 ★★★
+                html += `<div class="video-card ${unlocked ? '' : 'locked'}">
+                    <div class="video-thumbnail">
+                        <img ${imgSrcAttr} loading="lazy" alt="${cat.name}">
+                        <div class="lock-overlay" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-lock"></i></div>
+                    </div>
+                    <div class="video-meta">
+                        <div class="video-title">${v.title}<span class="section-num">${i+1}/${total}</span></div>
+                        <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
+                        <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
+                            <video controls preload="none" poster="${poster}" data-src="${videoUrl}"></video>
+                        </div>
+                        <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
+                        <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
+                    </div>
+                </div>`;
+            });
+            html += `</div></div></div>`;
+        } else {
+            const total = cat.children.reduce((s, c) => s + c.videos.length, 0);
+            html += `<div class="subject-folder"><div class="folder-header" data-target="${cat.id}">
+                <div class="folder-header-left"><i class="fas ${cat.icon}"></i><h2>${cat.name}</h2><span class="badge-count">${total} 节</span></div>
+                <div class="folder-toggle" data-target="${cat.id}"><i class="fas fa-chevron-down"></i></div>
+            </div><div class="folder-content" id="content-${cat.id}">`;
+            cat.children.forEach((child) => {
+                const cTotal = child.videos.length;
+                const poster = getPosterUrl(child.poster);
+                const imgSrcAttr = folderIndex === 0 ? `src="${poster}"` : `data-src="${poster}"`;
+                folderIndex++;
+                html += `<div class="subject-folder sub-folder"><div class="folder-header sub-header" data-target="${child.id}">
+                    <div class="folder-header-left"><i class="fas ${child.icon}"></i><h2>${child.name}</h2><span class="badge-count">${cTotal} 节</span></div>
+                    <div class="folder-toggle" data-target="${child.id}"><i class="fas fa-chevron-down"></i></div>
+                </div><div class="folder-content" id="content-${child.id}"><div class="video-grid">`;
+                child.videos.forEach((v, i) => {
+                    const unlocked = activated;
+                    const videoUrl = getVideoUrl(v.filename);
+                    // ★★★ 关键：视频标签不设置 src，用 data-src 保存 ★★★
+                    html += `<div class="video-card ${unlocked ? '' : 'locked'}">
+                        <div class="video-thumbnail">
+                            <img ${imgSrcAttr} loading="lazy" alt="${child.name}">
+                            <div class="lock-overlay" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-lock"></i></div>
+                        </div>
+                        <div class="video-meta">
+                            <div class="video-title">${v.title}<span class="section-num">${i+1}/${cTotal}</span></div>
+                            <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
+                            <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
+                                <video controls preload="none" poster="${poster}" data-src="${videoUrl}"></video>
+                            </div>
+                            <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
+                            <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
+                        </div>
+                    </div>`;
+                });
+                html += `</div></div></div>`;
+            });
+            html += `</div></div>`;
+        }
+    });
+
+    container.innerHTML = html;
+
+    // ================================================================
+    // ★★★ 真正的视频懒加载：点击时才设置 src ★★★
+    // ================================================================
+    document.querySelectorAll('video').forEach(function(video) {
+        var loadVideo = function() {
+            // 如果视频还没有 src，从 data-src 加载
+            if (!video.src || video.src === '') {
+                var src = video.getAttribute('data-src');
+                if (src) {
+                    video.src = src;
+                    video.load();
+                    // 加载完成后自动播放
+                    video.play().catch(function() {
+                        // 自动播放被浏览器阻止，用户手动点击播放
+                    });
+                }
+            }
+        };
+        
+        // 点击视频区域触发加载
+        video.addEventListener('click', loadVideo);
+        // 用户点击播放按钮时触发
+        video.addEventListener('play', loadVideo);
+        // 鼠标悬停时不要预加载！
+    });
+
+    // 绑定视频事件（互斥播放）
+    allVideos = [];
+    document.querySelectorAll('video').forEach(function(v) {
+        allVideos.push(v);
+        v.addEventListener('play', function() { pauseAllOtherVideos(this); });
+    });
+
+    // 图片懒加载
+    setTimeout(initLazyLoading, 200);
+
+    // 折叠事件 - 展开时加载图片
+    document.querySelectorAll('.folder-header:not(.sub-header)').forEach(function(h) {
+        h.addEventListener('click', function(e) {
+            if (e.target.closest('.sub-header')) return;
+            var id = this.dataset.target;
+            var c = document.getElementById('content-' + id);
+            var icon = this.querySelector('.folder-toggle i');
+            if (c) {
+                c.classList.toggle('open');
+                this.querySelector('.folder-toggle').classList.toggle('open');
+                icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                if (c.classList.contains('open')) {
+                    var imgs = c.querySelectorAll('.video-thumbnail img');
+                    imgs.forEach(function(img) {
+                        if (!img.src || img.src === '' || img.src === window.location.href) {
+                            img.src = img.dataset.src || img.getAttribute('data-src');
+                        }
+                        img.onload = function() {
+                            this.classList.add('loaded');
+                        };
+                        if (img.complete) {
+                            img.classList.add('loaded');
+                        }
+                    });
+                }
+            }
+        });
+    });
+    document.querySelectorAll('.sub-header').forEach(function(h) {
+        h.addEventListener('click', function(e) {
+            e.stopPropagation();
+            var id = this.dataset.target;
+            var c = document.getElementById('content-' + id);
+            var icon = this.querySelector('.folder-toggle i');
+            if (c) {
+                c.classList.toggle('open');
+                this.querySelector('.folder-toggle').classList.toggle('open');
+                icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
+                if (c.classList.contains('open')) {
+                    var imgs = c.querySelectorAll('.video-thumbnail img');
+                    imgs.forEach(function(img) {
+                        if (!img.src || img.src === '' || img.src === window.location.href) {
+                            img.src = img.dataset.src || img.getAttribute('data-src');
+                        }
+                        img.onload = function() {
+                            this.classList.add('loaded');
+                        };
+                        if (img.complete) {
+                            img.classList.add('loaded');
+                        }
+                    });
+                }
+            }
+        });
+    });
+}
+
+        function updateAllCards(activated) {
+            document.querySelectorAll('.video-card').forEach(card => {
+                const unlocked = activated;
+                const overlay = card.querySelector('.lock-overlay');
+                const container = card.querySelector('.video-player-container');
+                const placeholder = card.querySelector('.video-player-placeholder');
+                const hint = card.querySelector('.unlock-hint');
+                if (unlocked) {
+                    card.classList.remove('locked');
+                    if (overlay) overlay.style.display = 'none';
+                    if (placeholder) placeholder.style.display = 'none';
+                    if (container) container.style.display = 'block';
+                    if (hint) { hint.innerHTML = '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁'; hint.style.background = '#dff0e6'; hint.style.color = '#1b6b4a'; }
+                } else {
+                    card.classList.add('locked');
+                    if (overlay) overlay.style.display = 'flex';
+                    if (placeholder) placeholder.style.display = 'flex';
+                    if (container) container.style.display = 'none';
+                    if (hint) { hint.innerHTML = '<i class="fas fa-lock"></i> 需要激活'; hint.style.background = '#eaf3fa'; hint.style.color = '#5f7e93'; }
+                }
+            });
+            globalStatusText.textContent = activated ? `已激活 (${activePhone})` : '未激活';
+            globalStatusText.style.color = activated ? '#1b7a4a' : '#b13e3e';
+        }
+
+        function showRememberedUser(phone) {
+            rememberedPhoneDisplay.textContent = phone;
+            rememberedArea.style.display = 'block';
+            activationArea.style.display = 'none';
+        }
+        function hideRememberedUser() {
+            rememberedArea.style.display = 'none';
+            activationArea.style.display = 'flex';
+        }
+
+        // ================================================================
+        // ★★★ 激活函数（只从 GitHub 验证，无任何回退） ★★★
+        // ================================================================
+        async function performActivation(phone) {
+            if (!phone || phone.trim() === '') {
+                setStatus('⚠️ 请输入手机号', 'error');
+                return false;
+            }
+            const raw = phone.trim();
+            if (!/^\d{11}$/.test(raw)) {
+                setStatus('❌ 请输入11位有效手机号', 'error');
+                return false;
+            }
+
+            setStatus('⏳ 正在验证...', 'info');
+
+            try {
+                // ★★★ 直接从 GitHub 验证，无任何缓存回退 ★★★
+                const isValid = await checkPhoneIsActivated(raw);
+                
+                if (isValid) {
+                    // 激活成功
+                    isActivated = true;
+                    activePhone = raw;
+                    setStatus('✅ 激活成功！', 'success');
+                    globalStatusText.textContent = `已激活 (${raw})`;
+                    globalStatusText.style.color = '#1b7a4a';
+                    showRememberedUser(raw);
+                    setStoredPhone(raw);
+                    updateAllCards(true);
+                    // 重新渲染卡片以更新视频内容
+                    renderCategories(true);
+                    showToast('🎉 激活成功，欢迎 ' + raw, 'success');
+                    return true;
+                } else {
+                    setStatus('❌ 该手机号未激活，请联系管理员', 'error');
+                    showToast('❌ 该手机号未激活', 'error');
+                    return false;
+                }
+            } catch (error) {
+                console.error('验证失败:', error);
+                setStatus('⚠️ 验证服务暂不可用，请检查网络后重试', 'error');
+                showToast('⚠️ 网络异常，请稍后重试', 'error');
+                return false;
+            }
+        }
+
+        // ================================================================
+        // ★★★ 退出登录 ★★★
+        // ================================================================
+        function deactivate() {
+            isActivated = false;
+            activePhone = '';
+            setStatus('🔒 已退出激活', 'info');
+            updateAllCards(false);
+            phoneInput.value = '';
+            clearStoredPhone();
+            hideRememberedUser();
+            renderCategories(false);
+            globalStatusText.textContent = '未激活';
+            globalStatusText.style.color = '#b13e3e';
+            showToast('✅ 已退出', 'success');
+        }
+
+        // ================================================================
+        // ★★★ 自动登录验证（从 localStorage 读取，只从 GitHub 验证） ★★★
+        // ================================================================
+        async function tryAutoLogin() {
+            const stored = getStoredPhone();
+            if (!stored) return false;
+
+            setStatus('⏳ 自动验证中...', 'info');
+            try {
+                const isValid = await checkPhoneIsActivated(stored);
+                if (isValid) {
+                    isActivated = true;
+                    activePhone = stored;
+                    updateAllCards(true);
+                    showRememberedUser(stored);
+                    setStatus('✅ 已自动激活 (' + stored + ')', 'success');
+                    globalStatusText.textContent = `已激活 (${stored})`;
+                    globalStatusText.style.color = '#1b7a4a';
+                    renderCategories(true);
+                    showToast('✅ 欢迎回来，' + stored, 'success');
+                    return true;
+                } else {
+                    // 手机号已被管理员撤销
+                    clearStoredPhone();
+                    hideRememberedUser();
+                    setStatus('📱 该手机号已被撤销，请重新输入', 'info');
+                    renderCategories(false);
+                    return false;
+                }
+            } catch (error) {
+                console.error('自动验证失败:', error);
+                setStatus('📱 请手动输入手机号激活', 'info');
+                return false;
+            }
+        }
+
+        // ================================================================
+        // ★★★ 初始化 ★★★
+        // ================================================================
+        async function init() {
+            renderCategories(false);
+            updateAllCards(false);
+            const loggedIn = await tryAutoLogin();
+            if (!loggedIn) {
+                hideRememberedUser();
+                setStatus('📱 输入已激活的手机号，解锁全部视频', 'info');
+            }
+            console.log('🎯 信息处理技术员视频学习平台已加载（纯 GitHub 验证）');
+            console.log('📁 结构: 学前必看 → 实操(Word/Excel/PPT/Access) → 理论(7个子类) → 题目讲解 → 难点回顾');
+            console.log('🔒 验证方式: GitHub Issues (管理端添加的手机号才能激活)');
+        }
+
+        // 事件绑定
+        activateBtn.addEventListener('click', function() { performActivation(phoneInput.value); });
+        phoneInput.addEventListener('keypress', function(e) { if (e.key === 'Enter') { e.preventDefault(); activateBtn.click(); } });
+        phoneInput.addEventListener('input', function() { this.value = this.value.replace(/\D/g, ''); });
+        logoutBtn.addEventListener('click', function() {
+            if (confirm('确认退出当前账号？')) {
+                deactivate();
+                hideRememberedUser();
+                setStatus('🔒 已退出，请输入手机号重新激活', 'info');
+            }
+        });
+
+        init();
+    })();
+</script>
+</body>
+</html>
