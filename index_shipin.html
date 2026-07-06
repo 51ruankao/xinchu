@@ -342,9 +342,9 @@
         //const BASE_VIDEO_URL = PROTOCOL + 'cddsw.zyzcc.cn/xinxichuliyuan/';
         //const BASE_POSTER_URL = PROTOCOL + 'cddsw.zyzcc.cn/xinxichuliyuan/posters/';
         //console.log('📱 当前设备:', isMobile ? '手机' : '电脑', '使用协议:', PROTOCOL);
-        // 强制使用 HTTPS
-        const BASE_VIDEO_URL = 'https://cddsw.zyzcc.cn/xinxichuliyuan/';
-        const BASE_POSTER_URL = 'https://cddsw.zyzcc.cn/xinxichuliyuan/posters/';
+        // 将之前的判断逻辑替换为强制使用 HTTP
+        const BASE_VIDEO_URL = 'http://cddsw.zyzcc.cn/xinxichuliyuan/';
+        const BASE_POSTER_URL = 'http://cddsw.zyzcc.cn/xinxichuliyuan/posters/';
 
         // ================================================================
         // ★★★ 核心验证函数：从 GitHub Issues 读取已激活手机号列表 ★★★
