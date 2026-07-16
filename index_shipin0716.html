@@ -828,25 +828,46 @@
 
             container.innerHTML = html;
 
-            // ================================================================
-            // ★★★ 视频懒加载：点击时才设置 src ★★★
-            // ================================================================
-            document.querySelectorAll('video').forEach(function(video) {
-                var loadVideo = function() {
-                    if (!video.src || video.src === '') {
-                        var src = video.getAttribute('data-src');
-                        if (src) {
-                            video.src = src;
-                            video.load();
-                            video.play().catch(function() {
-                                // 自动播放被浏览器阻止
-                            });
-                        }
-                    }
-                };
-                video.addEventListener('click', loadVideo);
-                video.addEventListener('play', loadVideo);
-            });
+// ================================================================
+// ★★★ 修复：视频懒加载（区分加载和播放） ★★★
+// ================================================================
+document.querySelectorAll('video').forEach(function(video) {
+    var isLoaded = false;
+    
+    var loadAndPlay = function() {
+        if (!isLoaded) {
+            var src = video.getAttribute('data-src');
+            if (src) {
+                video.src = src;
+                video.load();
+                isLoaded = true;
+                video.play().catch(function() {});
+            }
+        } else {
+            // 已加载，直接播放
+            video.play().catch(function() {});
+        }
+    };
+    
+    // 点击视频区域（中间）→ 加载并播放
+    video.addEventListener('click', loadAndPlay);
+    
+    // 点击播放按钮 → 如果未加载则先加载，然后播放
+    video.addEventListener('play', function(e) {
+        if (!isLoaded) {
+            var src = video.getAttribute('data-src');
+            if (src) {
+                video.src = src;
+                video.load();
+                isLoaded = true;
+                // 加载完成后自动继续播放
+                video.play().catch(function() {});
+            }
+        }
+        // 互斥播放
+        pauseAllOtherVideos(this);
+    });
+});
 
             // 绑定视频事件（互斥播放）
             allVideos = [];
