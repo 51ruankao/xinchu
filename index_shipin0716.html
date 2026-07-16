@@ -109,47 +109,31 @@
             aspect-ratio: 16/9;
             position: relative;
         }
+        /* ★★★ 关键：让视频控件始终可交互 ★★★ */
         .video-player-container video {
             width: 100%;
             height: 100%;
             display: block;
             background: #f0f4f8;
             object-fit: contain;
+        }
+        /* ★★★ 视频未加载时，控制栏半透明提示 ★★★ */
+        .video-player-container video:not([src])::-webkit-media-controls {
+            opacity: 0.5;
+            pointer-events: auto !important;
+        }
+        .video-player-container video:not([src])::-webkit-media-controls-play-button {
+            opacity: 0.5;
+        }
+        /* ★★★ 让视频和控制栏始终可点击 ★★★ */
+        .video-player-container video {
             pointer-events: auto !important;
             cursor: pointer !important;
         }
         .video-player-container video::-webkit-media-controls {
             pointer-events: auto !important;
         }
-        /* ★★★ 自定义播放按钮 ★★★ */
-        .video-play-btn {
-            position: absolute;
-            top: 50%;
-            left: 50%;
-            transform: translate(-50%, -50%);
-            width: 60px;
-            height: 60px;
-            background: rgba(0, 0, 0, 0.6);
-            border-radius: 50%;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            color: white;
-            font-size: 24px;
-            cursor: pointer;
-            z-index: 10;
-            pointer-events: auto;
-            border: 2px solid rgba(255, 255, 255, 0.3);
-            transition: all 0.3s ease;
-        }
-        .video-play-btn:hover {
-            background: rgba(26, 77, 102, 0.85);
-            transform: translate(-50%, -50%) scale(1.1);
-        }
-        .video-play-btn.playing {
-            opacity: 0;
-            pointer-events: none;
-        }
+
         .video-card.locked .video-player-container { display: none; }
         .video-card.locked .video-player-placeholder { display: flex; }
         .video-player-placeholder {
@@ -223,6 +207,11 @@
 
         .wechat-tip.show { display: flex !important; }
 
+        /* ★★★ 未加载视频的播放按钮提示 ★★★ */
+        .video-player-container video:not([src])::-webkit-media-controls-play-button {
+            opacity: 0.6;
+        }
+
         @media (max-width: 600px) {
             body { padding: 10px; }
             .app-wrapper { padding: 16px 12px; border-radius: 28px; }
@@ -275,7 +264,6 @@
             .subject-title-area p { font-size: 0.8rem; }
             .sub-folder { margin-left: 4px !important; padding-left: 6px !important; }
             .wechat-tip { font-size: 0.75rem; padding: 10px 12px; }
-            .video-play-btn { width: 44px; height: 44px; font-size: 18px; }
         }
 
         @media (max-width: 400px) {
@@ -287,7 +275,6 @@
             .sub-folder { margin-left: 2px !important; padding-left: 4px !important; }
             .sub-folder .folder-header { padding: 6px 10px !important; }
             .sub-folder .folder-header-left h2 { font-size: 0.85rem !important; }
-            .video-play-btn { width: 36px; height: 36px; font-size: 14px; }
         }
     </style>
 </head>
@@ -744,7 +731,7 @@
         }
 
         // ================================================================
-        // ★★★ 渲染函数（自定义播放按钮，点击加载） ★★★
+        // ★★★ 渲染函数（保留 controls，点击播放才加载） ★★★
         // ================================================================
         function renderCategories(activated) {
             if (!container) return;
@@ -773,8 +760,7 @@
                                 <div class="video-title">${v.title}<span class="section-num">${i+1}/${total}</span></div>
                                 <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                 <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                    <video playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;width:100%;height:100%;"></video>
-                                    <div class="video-play-btn"><i class="fas fa-play"></i></div>
+                                    <video controls playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;width:100%;height:100%;"></video>
                                 </div>
                                 <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                 <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -809,8 +795,7 @@
                                     <div class="video-title">${v.title}<span class="section-num">${i+1}/${cTotal}</span></div>
                                     <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                     <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                        <video playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;width:100%;height:100%;"></video>
-                                        <div class="video-play-btn"><i class="fas fa-play"></i></div>
+                                        <video controls playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;width:100%;height:100%;"></video>
                                     </div>
                                     <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                     <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -826,27 +811,22 @@
             container.innerHTML = html;
 
             // ================================================================
-            // ★★★ 视频按需加载（点击自定义播放按钮才加载） ★★★
+            // ★★★ 视频按需加载（点击播放按钮才加载，保留 controls） ★★★
             // ================================================================
             document.querySelectorAll('.video-card').forEach(function(card) {
                 var video = card.querySelector('video');
-                var playBtn = card.querySelector('.video-play-btn');
-                if (!video || !playBtn) return;
+                if (!video) return;
                 
                 var videoUrl = card.getAttribute('data-video-url');
                 if (!videoUrl) return;
                 
                 var isLoaded = false;
                 var isLoading = false;
-                var isPlaying = false;
+                var isVideoReady = false;
                 
-                // ★★★ 加载并播放视频 ★★★
-                function loadAndPlay() {
-                    if (isLoaded) {
-                        video.play().catch(function() {});
-                        return;
-                    }
-                    if (isLoading) return;
+                // ★★★ 加载视频 ★★★
+                function loadVideo() {
+                    if (isLoaded || isLoading) return;
                     isLoading = true;
                     
                     video.src = videoUrl;
@@ -855,36 +835,12 @@
                     video.addEventListener('canplay', function() {
                         isLoaded = true;
                         isLoading = false;
-                        isPlaying = true;
-                        playBtn.classList.add('playing');
-                        video.play().catch(function() {
-                            isPlaying = false;
-                            playBtn.classList.remove('playing');
-                        });
-                    }, { once: true });
-                    
-                    video.addEventListener('ended', function() {
-                        isPlaying = false;
-                        playBtn.classList.remove('playing');
-                    });
-                    
-                    video.addEventListener('pause', function() {
-                        if (!video.ended) {
-                            isPlaying = false;
-                            playBtn.classList.remove('playing');
+                        isVideoReady = true;
+                        // 如果用户点击了播放，自动播放
+                        if (video.paused && video.autoplay) {
+                            video.play().catch(function() {});
                         }
-                    });
-                    
-                    video.addEventListener('play', function() {
-                        isPlaying = true;
-                        playBtn.classList.add('playing');
-                        // 暂停其他视频
-                        document.querySelectorAll('video').forEach(function(v) {
-                            if (v !== video && !v.paused) {
-                                v.pause();
-                            }
-                        });
-                    });
+                    }, { once: true });
                     
                     video.addEventListener('error', function() {
                         isLoading = false;
@@ -894,19 +850,36 @@
                             hint.style.background = '#ffe6e6';
                             hint.style.color = '#b13e3e';
                         }
-                        playBtn.classList.remove('playing');
                     }, { once: true });
                 }
                 
-                // ★★★ 点击自定义播放按钮 → 加载并播放 ★★★
-                playBtn.addEventListener('click', function(e) {
-                    e.stopPropagation();
-                    loadAndPlay();
+                // ★★★ 点击播放按钮触发加载 ★★★
+                video.addEventListener('play', function(e) {
+                    if (!isLoaded) {
+                        loadVideo();
+                        // 标记需要自动播放
+                        video.autoplay = true;
+                    } else {
+                        video.autoplay = false;
+                    }
+                    // 暂停其他视频
+                    document.querySelectorAll('video').forEach(function(v) {
+                        if (v !== video && !v.paused) {
+                            v.pause();
+                        }
+                    });
                 });
                 
-                // ★★★ 点击视频区域 → 加载并播放 ★★★
+                // ★★★ 点击视频区域（非播放按钮）也触发加载 ★★★
                 video.addEventListener('click', function(e) {
-                    loadAndPlay();
+                    if (!isLoaded) {
+                        loadVideo();
+                        video.autoplay = true;
+                        // 手动触发播放
+                        setTimeout(function() {
+                            video.play().catch(function() {});
+                        }, 100);
+                    }
                 });
             });
 
@@ -1118,7 +1091,7 @@
                 hideRememberedUser();
                 setStatus('📱 输入已激活的手机号，解锁全部视频', 'info');
             }
-            console.log('🎯 信息处理技术员视频学习平台已加载（自定义播放按钮）');
+            console.log('🎯 信息处理技术员视频学习平台已加载（保留 controls，按需加载）');
             console.log('📱 微信浏览器: ' + (isWechatBrowser() ? '是 ✅ 已显示提示' : '否'));
         }
 
