@@ -828,99 +828,45 @@
 
             container.innerHTML = html;
 
-// ================================================================
-// ★★★ 修复：视频懒加载 + 微信兼容 ★★★
-// ================================================================
-document.querySelectorAll('.video-card').forEach(function(card) {
-    var video = card.querySelector('video');
-    if (!video) return;
-    
-    var isLoaded = false;
-    var poster = video.getAttribute('poster') || '';
-    var dataSrc = video.getAttribute('data-src') || '';
-    
-    // 确保视频控件可见且可点击
-    video.style.pointerEvents = 'auto';
-    video.style.display = 'block';
-    video.style.width = '100%';
-    video.style.height = '100%';
-    video.setAttribute('playsinline', 'true');
-    video.setAttribute('webkit-playsinline', 'true');
-    video.setAttribute('x5-playsinline', 'true');
-    
-    var loadAndPlay = function(e) {
-        e.stopPropagation();
-        if (!isLoaded) {
-            if (dataSrc) {
-                video.src = dataSrc;
-                video.load();
-                isLoaded = true;
-                // 延迟一下再播放，确保加载完成
-                setTimeout(function() {
-                    video.play().catch(function(err) {
-                        console.log('自动播放被阻止:', err);
-                        // 显示提示让用户手动点击
-                        showToast('请点击播放按钮手动播放', 'info');
-                    });
-                }, 100);
-            }
-        } else {
-            if (video.paused) {
-                video.play().catch(function(err) {
-                    console.log('播放失败:', err);
+            // ================================================================
+            // ★★★ 修复：视频懒加载（点击播放按钮也能正常加载） ★★★
+            // ================================================================
+            document.querySelectorAll('video').forEach(function(video) {
+                var isLoaded = false;
+                
+                var loadAndPlay = function() {
+                    if (!isLoaded) {
+                        var src = video.getAttribute('data-src');
+                        if (src) {
+                            video.src = src;
+                            video.load();
+                            isLoaded = true;
+                            video.play().catch(function() {});
+                        }
+                    } else {
+                        video.play().catch(function() {});
+                    }
+                };
+                
+                // 点击视频中间区域 → 加载并播放
+                video.addEventListener('click', loadAndPlay);
+                
+                // 点击播放按钮 → 如果未加载则先加载，然后播放
+                video.addEventListener('play', function(e) {
+                    if (!isLoaded) {
+                        var src = video.getAttribute('data-src');
+                        if (src) {
+                            video.src = src;
+                            video.load();
+                            isLoaded = true;
+                            video.play().catch(function() {});
+                        }
+                    }
+                    // 互斥播放（暂停其他视频）
+                    pauseAllOtherVideos(this);
                 });
-            }
-        }
-    };
-    
-    // 点击视频区域 → 加载并播放
-    video.addEventListener('click', loadAndPlay);
-    
-    // 点击播放按钮 → 加载并播放
-    video.addEventListener('play', function(e) {
-        if (!isLoaded) {
-            if (dataSrc) {
-                video.src = dataSrc;
-                video.load();
-                isLoaded = true;
-                setTimeout(function() {
-                    video.play().catch(function() {});
-                }, 100);
-            }
-        }
-        pauseAllOtherVideos(this);
-    });
-    
-    // 如果视频加载失败，显示提示
-    video.addEventListener('error', function(e) {
-        console.error('视频加载错误:', e);
-        showToast('⚠️ 视频加载失败，请尝试刷新或更换浏览器', 'error');
-    });
-    
-    // 确保视频容器可以点击
-    var container = card.querySelector('.video-player-container');
-    if (container) {
-        container.style.pointerEvents = 'auto';
-        container.style.cursor = 'pointer';
-    }
-});
+            });
 
-// 额外修复：确保所有视频卡片可点击
-document.querySelectorAll('.video-card').forEach(function(card) {
-    // 如果是解锁状态，确保视频区域可交互
-    if (!card.classList.contains('locked')) {
-        var container = card.querySelector('.video-player-container');
-        if (container) {
-            container.style.display = 'block';
-            container.style.pointerEvents = 'auto';
-        }
-        var video = card.querySelector('video');
-        if (video) {
-            video.style.pointerEvents = 'auto';
-            video.style.display = 'block';
-        }
-    }
-});
             // 绑定视频事件（互斥播放）
             allVideos = [];
             document.querySelectorAll('video').forEach(function(v) {
