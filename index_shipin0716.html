@@ -118,7 +118,6 @@
             pointer-events: auto !important;
             cursor: pointer !important;
         }
-        /* ★★★ 关键修复：确保视频控件可交互 ★★★ */
         .video-player-container video::-webkit-media-controls {
             pointer-events: auto !important;
         }
@@ -339,7 +338,7 @@
         const STORAGE_KEY = 'xinxichuli_activated_phone';
 
         // ================================================================
-        // ★★★ 视频和封面图托管（全部使用 HTTPS） ★★★
+        // ★★★ 视频和封面图托管 ★★★
         // ================================================================
         const BASE_VIDEO_URL = 'https://cddsw.zyzcc.cn/xinxichuliyuan/';
         const BASE_POSTER_URL = 'https://cddsw.zyzcc.cn/xinxichuliyuan/posters/';
@@ -372,7 +371,7 @@
         };
 
         // ================================================================
-        // ★★★ 核心验证函数：从 GitHub Issues 读取已激活手机号列表 ★★★
+        // ★★★ 核心验证函数 ★★★
         // ================================================================
         async function fetchActivatedPhoneList() {
             const url = `https://api.github.com/repos/${REPO_OWNER}/${REPO_NAME}/issues?labels=${encodeURIComponent(LABEL_ACTIVATED)}&state=open&per_page=100`;
@@ -794,30 +793,18 @@
             container.innerHTML = html;
 
             // ================================================================
-            // ★★★ 视频懒加载修复 ★★★
+            // ★★★ 视频懒加载修复 - 所有视频都可用 ★★★
             // ================================================================
             document.querySelectorAll('video').forEach(function(video) {
                 var isLoaded = false;
                 var dataSrc = video.getAttribute('data-src');
                 
-                // 如果 data-src 存在但 src 为空，在激活状态下自动加载第一个视频
-                if (dataSrc && activated) {
-                    var isFirstVideo = video.closest('.video-grid') && 
-                                       video.closest('.video-grid').querySelector('video') === video;
-                    if (isFirstVideo) {
-                        video.src = dataSrc;
-                        video.load();
-                        isLoaded = true;
-                    }
-                }
-                
                 var loadAndPlay = function(e) {
-                    e.stopPropagation();
+                    if (e) e.stopPropagation();
                     if (!isLoaded && dataSrc) {
                         video.src = dataSrc;
                         video.load();
                         isLoaded = true;
-                        // 加载完成后尝试播放
                         setTimeout(function() {
                             video.play().catch(function() {});
                         }, 100);
@@ -842,6 +829,17 @@
                     pauseAllOtherVideos(this);
                 });
                 
+                // 如果激活状态，自动加载第一个可见视频，但不自动播放
+                if (activated && dataSrc) {
+                    var rect = video.getBoundingClientRect();
+                    var isVisible = rect.top < window.innerHeight + 200 && rect.bottom > -200;
+                    if (isVisible) {
+                        video.src = dataSrc;
+                        video.load();
+                        isLoaded = true;
+                    }
+                }
+                
                 // 如果视频加载失败，显示错误提示
                 video.addEventListener('error', function(e) {
                     console.warn('视频加载失败:', dataSrc);
@@ -864,7 +862,7 @@
             // 图片懒加载
             setTimeout(initLazyLoading, 200);
 
-            // 折叠事件 - 展开时加载图片
+            // 折叠事件
             document.querySelectorAll('.folder-header:not(.sub-header)').forEach(function(h) {
                 h.addEventListener('click', function(e) {
                     if (e.target.closest('.sub-header')) return;
@@ -872,10 +870,11 @@
                     var c = document.getElementById('content-' + id);
                     var icon = this.querySelector('.folder-toggle i');
                     if (c) {
+                        var isOpening = !c.classList.contains('open');
                         c.classList.toggle('open');
                         this.querySelector('.folder-toggle').classList.toggle('open');
                         icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-                        if (c.classList.contains('open')) {
+                        if (isOpening) {
                             var imgs = c.querySelectorAll('.video-thumbnail img');
                             imgs.forEach(function(img) {
                                 if (!img.src || img.src === '' || img.src === window.location.href) {
@@ -886,6 +885,17 @@
                                 };
                                 if (img.complete) {
                                     img.classList.add('loaded');
+                                }
+                            });
+                            // ★★★ 展开时加载该区域所有视频 ★★★
+                            var videos = c.querySelectorAll('video');
+                            videos.forEach(function(v) {
+                                var src = v.getAttribute('data-src');
+                                if (src && !v.src) {
+                                    v.src = src;
+                                    v.load();
+                                    // 标记为已加载
+                                    v._isLoaded = true;
                                 }
                             });
                         }
@@ -899,10 +909,11 @@
                     var c = document.getElementById('content-' + id);
                     var icon = this.querySelector('.folder-toggle i');
                     if (c) {
+                        var isOpening = !c.classList.contains('open');
                         c.classList.toggle('open');
                         this.querySelector('.folder-toggle').classList.toggle('open');
                         icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-                        if (c.classList.contains('open')) {
+                        if (isOpening) {
                             var imgs = c.querySelectorAll('.video-thumbnail img');
                             imgs.forEach(function(img) {
                                 if (!img.src || img.src === '' || img.src === window.location.href) {
@@ -913,6 +924,16 @@
                                 };
                                 if (img.complete) {
                                     img.classList.add('loaded');
+                                }
+                            });
+                            // ★★★ 展开时加载该区域所有视频 ★★★
+                            var videos = c.querySelectorAll('video');
+                            videos.forEach(function(v) {
+                                var src = v.getAttribute('data-src');
+                                if (src && !v.src) {
+                                    v.src = src;
+                                    v.load();
+                                    v._isLoaded = true;
                                 }
                             });
                         }
@@ -934,7 +955,6 @@
                     if (placeholder) placeholder.style.display = 'none';
                     if (container) {
                         container.style.display = 'block';
-                        // 确保视频容器可点击
                         container.style.pointerEvents = 'auto';
                     }
                     if (hint) { hint.innerHTML = '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁'; hint.style.background = '#dff0e6'; hint.style.color = '#1b6b4a'; }
