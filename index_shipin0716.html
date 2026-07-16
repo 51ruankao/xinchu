@@ -16,7 +16,6 @@
         .logo-text span { color: #2f7a9e; font-weight: 300; }
         .activation-badge { background: #ffffffcc; padding: 8px 18px; border-radius: 100px; font-weight: 500; color: #1f4b62; font-size: 0.85rem; display: flex; align-items: center; gap: 10px; }
 
-        /* ========== 微信浏览器提示 ========== */
         .wechat-tip {
             display: none;
             background: #fff3cd;
@@ -108,6 +107,7 @@
             background: #f0f4f8;
             width: 100%;
             aspect-ratio: 16/9;
+            position: relative;
         }
         .video-player-container video {
             width: 100%;
@@ -115,6 +115,12 @@
             display: block;
             background: #f0f4f8;
             object-fit: contain;
+            pointer-events: auto !important;
+            cursor: pointer !important;
+        }
+        /* ★★★ 关键修复：确保视频控件可交互 ★★★ */
+        .video-player-container video::-webkit-media-controls {
+            pointer-events: auto !important;
         }
         .video-card.locked .video-player-container { display: none; }
         .video-card.locked .video-player-placeholder { display: flex; }
@@ -187,7 +193,6 @@
             z-index: 1;
         }
 
-        /* ========== 微信浏览器专属调整 ========== */
         .wechat-tip.show { display: flex !important; }
 
         @media (max-width: 600px) {
@@ -195,22 +200,9 @@
             .app-wrapper { padding: 16px 12px; border-radius: 28px; }
             .header { flex-direction: column; align-items: stretch; gap: 10px; }
             .logo-text { font-size: 1.2rem; }
-
-            .activation-area {
-                padding: 6px 10px !important;
-                gap: 4px !important;
-                border-radius: 20px !important;
-            }
-
-            .status-message {
-                font-size: 0.7rem !important;
-                padding: 2px 8px !important;
-            }
-
-            .activation-input-group label {
-                display: none !important;
-            }
-
+            .activation-area { padding: 6px 10px !important; gap: 4px !important; border-radius: 20px !important; }
+            .status-message { font-size: 0.7rem !important; padding: 2px 8px !important; }
+            .activation-input-group label { display: none !important; }
             .activation-input-group {
                 display: flex !important;
                 flex-direction: row !important;
@@ -235,15 +227,11 @@
                 font-size: 0.7rem !important;
                 height: 30px !important;
             }
-
             .folder-header { padding: 12px 14px; }
             .folder-header-left h2 { font-size: 1rem; }
             .folder-content { padding: 0 14px; }
             .folder-content.open { padding: 0 14px 14px 14px; }
-            .video-grid {
-                grid-template-columns: 1fr;
-                gap: 12px;
-            }
+            .video-grid { grid-template-columns: 1fr; gap: 12px; }
             .video-card { padding: 8px; border-radius: 14px; }
             .video-thumbnail { border-radius: 10px; }
             .video-title { font-size: 0.8rem; flex-wrap: wrap; gap: 2px; }
@@ -257,41 +245,19 @@
             .toast { font-size: 0.8rem; padding: 10px 18px; bottom: 16px; }
             .subject-title-area h1 { font-size: 1.2rem; }
             .subject-title-area p { font-size: 0.8rem; }
-            .sub-folder {
-                margin-left: 4px !important;
-                padding-left: 6px !important;
-            }
+            .sub-folder { margin-left: 4px !important; padding-left: 6px !important; }
             .wechat-tip { font-size: 0.75rem; padding: 10px 12px; }
         }
 
         @media (max-width: 400px) {
-            .video-grid {
-                grid-template-columns: 1fr;
-                gap: 10px;
-            }
+            .video-grid { grid-template-columns: 1fr; gap: 10px; }
             .video-title { font-size: 0.75rem; }
             .video-desc { font-size: 0.6rem; }
-            .activation-input-group input {
-                min-width: 50px !important;
-                padding: 3px 8px !important;
-                font-size: 0.7rem !important;
-                height: 26px !important;
-            }
-            .activation-input-group .btn {
-                padding: 3px 10px !important;
-                font-size: 0.65rem !important;
-                height: 26px !important;
-            }
-            .sub-folder {
-                margin-left: 2px !important;
-                padding-left: 4px !important;
-            }
-            .sub-folder .folder-header {
-                padding: 6px 10px !important;
-            }
-            .sub-folder .folder-header-left h2 {
-                font-size: 0.85rem !important;
-            }
+            .activation-input-group input { min-width: 50px !important; padding: 3px 8px !important; font-size: 0.7rem !important; height: 26px !important; }
+            .activation-input-group .btn { padding: 3px 10px !important; font-size: 0.65rem !important; height: 26px !important; }
+            .sub-folder { margin-left: 2px !important; padding-left: 4px !important; }
+            .sub-folder .folder-header { padding: 6px 10px !important; }
+            .sub-folder .folder-header-left h2 { font-size: 0.85rem !important; }
         }
     </style>
 </head>
@@ -308,7 +274,6 @@
         </div>
     </header>
 
-    <!-- ========== 微信浏览器温馨提示 ========== -->
     <div class="wechat-tip" id="wechatTip">
         <span class="icon">💡</span>
         <div style="flex:1;">
@@ -430,7 +395,7 @@
         }
 
         // ================================================================
-        // ★★★ 科目数据（五类，一级/二级混合） ★★★
+        // ★★★ 科目数据 ★★★
         // ================================================================
         const categories = [
             {
@@ -648,7 +613,7 @@
         }
 
         // ================================================================
-        // ★★★ 图片懒加载（首屏只加载第一张图） ★★★
+        // ★★★ 图片懒加载 ★★★
         // ================================================================
         function initLazyLoading() {
             const images = document.querySelectorAll('.video-thumbnail img');
@@ -749,7 +714,7 @@
         }
 
         // ================================================================
-        // ★★★ 渲染函数（首屏只加载第一张图） ★★★
+        // ★★★ 渲染函数 ★★★
         // ================================================================
         function renderCategories(activated) {
             if (!container) return;
@@ -778,7 +743,7 @@
                                 <div class="video-title">${v.title}<span class="section-num">${i+1}/${total}</span></div>
                                 <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                 <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                    <video controls preload="none" poster="${poster}" data-src="${videoUrl}"></video>
+                                    <video controls playsinline preload="none" poster="${poster}" data-src="${videoUrl}" style="pointer-events:auto;cursor:pointer;"></video>
                                 </div>
                                 <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                 <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -813,7 +778,7 @@
                                     <div class="video-title">${v.title}<span class="section-num">${i+1}/${cTotal}</span></div>
                                     <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                     <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                        <video controls preload="none" poster="${poster}" data-src="${videoUrl}"></video>
+                                        <video controls playsinline preload="none" poster="${poster}" data-src="${videoUrl}" style="pointer-events:auto;cursor:pointer;"></video>
                                     </div>
                                     <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                     <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -829,41 +794,63 @@
             container.innerHTML = html;
 
             // ================================================================
-            // ★★★ 修复：视频懒加载（点击播放按钮也能正常加载） ★★★
+            // ★★★ 视频懒加载修复 ★★★
             // ================================================================
             document.querySelectorAll('video').forEach(function(video) {
                 var isLoaded = false;
+                var dataSrc = video.getAttribute('data-src');
                 
-                var loadAndPlay = function() {
-                    if (!isLoaded) {
-                        var src = video.getAttribute('data-src');
-                        if (src) {
-                            video.src = src;
-                            video.load();
-                            isLoaded = true;
+                // 如果 data-src 存在但 src 为空，在激活状态下自动加载第一个视频
+                if (dataSrc && activated) {
+                    var isFirstVideo = video.closest('.video-grid') && 
+                                       video.closest('.video-grid').querySelector('video') === video;
+                    if (isFirstVideo) {
+                        video.src = dataSrc;
+                        video.load();
+                        isLoaded = true;
+                    }
+                }
+                
+                var loadAndPlay = function(e) {
+                    e.stopPropagation();
+                    if (!isLoaded && dataSrc) {
+                        video.src = dataSrc;
+                        video.load();
+                        isLoaded = true;
+                        // 加载完成后尝试播放
+                        setTimeout(function() {
                             video.play().catch(function() {});
-                        }
-                    } else {
+                        }, 100);
+                    } else if (isLoaded) {
                         video.play().catch(function() {});
                     }
                 };
                 
-                // 点击视频中间区域 → 加载并播放
+                // 点击视频区域 → 加载并播放
                 video.addEventListener('click', loadAndPlay);
                 
-                // 点击播放按钮 → 如果未加载则先加载，然后播放
+                // 点击播放按钮 → 如果未加载则先加载
                 video.addEventListener('play', function(e) {
-                    if (!isLoaded) {
-                        var src = video.getAttribute('data-src');
-                        if (src) {
-                            video.src = src;
-                            video.load();
-                            isLoaded = true;
+                    if (!isLoaded && dataSrc) {
+                        video.src = dataSrc;
+                        video.load();
+                        isLoaded = true;
+                        setTimeout(function() {
                             video.play().catch(function() {});
-                        }
+                        }, 100);
                     }
-                    // 互斥播放（暂停其他视频）
                     pauseAllOtherVideos(this);
+                });
+                
+                // 如果视频加载失败，显示错误提示
+                video.addEventListener('error', function(e) {
+                    console.warn('视频加载失败:', dataSrc);
+                    var hint = this.closest('.video-card')?.querySelector('.unlock-hint');
+                    if (hint) {
+                        hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#b13e3e;"></i> 加载失败，请重试';
+                        hint.style.background = '#ffe6e6';
+                        hint.style.color = '#b13e3e';
+                    }
                 });
             });
 
@@ -945,7 +932,11 @@
                     card.classList.remove('locked');
                     if (overlay) overlay.style.display = 'none';
                     if (placeholder) placeholder.style.display = 'none';
-                    if (container) container.style.display = 'block';
+                    if (container) {
+                        container.style.display = 'block';
+                        // 确保视频容器可点击
+                        container.style.pointerEvents = 'auto';
+                    }
                     if (hint) { hint.innerHTML = '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁'; hint.style.background = '#dff0e6'; hint.style.color = '#1b6b4a'; }
                 } else {
                     card.classList.add('locked');
@@ -970,7 +961,7 @@
         }
 
         // ================================================================
-        // ★★★ 激活函数（只从 GitHub 验证） ★★★
+        // ★★★ 激活函数 ★★★
         // ================================================================
         async function performActivation(phone) {
             if (!phone || phone.trim() === '') {
@@ -1077,9 +1068,7 @@
                 hideRememberedUser();
                 setStatus('📱 输入已激活的手机号，解锁全部视频', 'info');
             }
-            console.log('🎯 信息处理技术员视频学习平台已加载（纯 GitHub 验证 + HTTPS）');
-            console.log('📁 结构: 学前必看 → 实操(Word/Excel/PPT/Access) → 理论(7个子类) → 题目讲解 → 难点回顾');
-            console.log('🔒 验证方式: GitHub Issues (管理端添加的手机号才能激活)');
+            console.log('🎯 信息处理技术员视频学习平台已加载');
             console.log('📱 微信浏览器: ' + (isWechatBrowser() ? '是 ✅ 已显示提示' : '否'));
         }
 
