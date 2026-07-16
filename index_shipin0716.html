@@ -792,65 +792,59 @@
 
             container.innerHTML = html;
 
-            // ================================================================
-            // ★★★ 视频懒加载修复 - 所有视频都可用 ★★★
-            // ================================================================
-            document.querySelectorAll('video').forEach(function(video) {
-                var isLoaded = false;
-                var dataSrc = video.getAttribute('data-src');
-                
-                var loadAndPlay = function(e) {
-                    if (e) e.stopPropagation();
-                    if (!isLoaded && dataSrc) {
-                        video.src = dataSrc;
-                        video.load();
-                        isLoaded = true;
-                        setTimeout(function() {
-                            video.play().catch(function() {});
-                        }, 100);
-                    } else if (isLoaded) {
-                        video.play().catch(function() {});
-                    }
-                };
-                
-                // 点击视频区域 → 加载并播放
-                video.addEventListener('click', loadAndPlay);
-                
-                // 点击播放按钮 → 如果未加载则先加载
-                video.addEventListener('play', function(e) {
-                    if (!isLoaded && dataSrc) {
-                        video.src = dataSrc;
-                        video.load();
-                        isLoaded = true;
-                        setTimeout(function() {
-                            video.play().catch(function() {});
-                        }, 100);
-                    }
-                    pauseAllOtherVideos(this);
-                });
-                
-                // 如果激活状态，自动加载第一个可见视频，但不自动播放
-                if (activated && dataSrc) {
-                    var rect = video.getBoundingClientRect();
-                    var isVisible = rect.top < window.innerHeight + 200 && rect.bottom > -200;
-                    if (isVisible) {
-                        video.src = dataSrc;
-                        video.load();
-                        isLoaded = true;
-                    }
-                }
-                
-                // 如果视频加载失败，显示错误提示
-                video.addEventListener('error', function(e) {
-                    console.warn('视频加载失败:', dataSrc);
-                    var hint = this.closest('.video-card')?.querySelector('.unlock-hint');
-                    if (hint) {
-                        hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#b13e3e;"></i> 加载失败，请重试';
-                        hint.style.background = '#ffe6e6';
-                        hint.style.color = '#b13e3e';
-                    }
-                });
-            });
+// ================================================================
+// ★★★ 视频懒加载 - 点击播放按钮时才加载（省流） ★★★
+// ================================================================
+document.querySelectorAll('video').forEach(function(video) {
+    var isLoaded = false;
+    var dataSrc = video.getAttribute('data-src');
+    var isPlaying = false;
+
+    // 真正的加载函数：只有点击播放时才执行
+    var loadVideo = function() {
+        if (isLoaded) return;
+        if (!dataSrc) return;
+
+        video.src = dataSrc;
+        video.load();
+        isLoaded = true;
+
+        // 加载完成后自动播放
+        video.addEventListener('canplay', function() {
+            if (!isPlaying) {
+                video.play().catch(function() {});
+                isPlaying = true;
+            }
+        }, { once: true });
+
+        // 如果加载失败，显示提示
+        video.addEventListener('error', function() {
+            var hint = this.closest('.video-card')?.querySelector('.unlock-hint');
+            if (hint) {
+                hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#b13e3e;"></i> 加载失败，请重试';
+                hint.style.background = '#ffe6e6';
+                hint.style.color = '#b13e3e';
+            }
+        }, { once: true });
+    };
+
+    // ★★★ 点击播放按钮 → 加载并播放 ★★★
+    video.addEventListener('play', function(e) {
+        loadVideo();
+        pauseAllOtherVideos(this);
+    });
+
+    // ★★★ 点击视频中间区域 → 加载并播放（和播放按钮行为一致） ★★★
+    video.addEventListener('click', function(e) {
+        // 如果用户点击的是播放按钮区域，play 事件会先触发，这里不再重复加载
+        if (!isLoaded) {
+            loadVideo();
+        } else {
+            video.play().catch(function() {});
+        }
+        pauseAllOtherVideos(this);
+    });
+});
 
             // 绑定视频事件（互斥播放）
             allVideos = [];
