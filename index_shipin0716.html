@@ -713,7 +713,7 @@
         }
 
         // ================================================================
-        // ★★★ 渲染函数 ★★★
+        // ★★★ 渲染函数（按需加载，点击播放才加载视频） ★★★
         // ================================================================
         function renderCategories(activated) {
             if (!container) return;
@@ -733,7 +733,8 @@
                     cat.videos.forEach((v, i) => {
                         const unlocked = activated;
                         const videoUrl = getVideoUrl(v.filename);
-                        html += `<div class="video-card ${unlocked ? '' : 'locked'}">
+                        // ★★★ 视频地址存储在 data-video-url，不放在 video 标签上 ★★★
+                        html += `<div class="video-card ${unlocked ? '' : 'locked'}" data-video-url="${videoUrl}">
                             <div class="video-thumbnail">
                                 <img ${imgSrcAttr} loading="lazy" alt="${cat.name}">
                                 <div class="lock-overlay" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-lock"></i></div>
@@ -742,7 +743,7 @@
                                 <div class="video-title">${v.title}<span class="section-num">${i+1}/${total}</span></div>
                                 <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                 <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                    <video controls playsinline preload="none" poster="${poster}" data-src="${videoUrl}" style="pointer-events:auto;cursor:pointer;"></video>
+                                    <video controls playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;"></video>
                                 </div>
                                 <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                 <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -768,7 +769,8 @@
                         child.videos.forEach((v, i) => {
                             const unlocked = activated;
                             const videoUrl = getVideoUrl(v.filename);
-                            html += `<div class="video-card ${unlocked ? '' : 'locked'}">
+                            // ★★★ 视频地址存储在 data-video-url，不放在 video 标签上 ★★★
+                            html += `<div class="video-card ${unlocked ? '' : 'locked'}" data-video-url="${videoUrl}">
                                 <div class="video-thumbnail">
                                     <img ${imgSrcAttr} loading="lazy" alt="${child.name}">
                                     <div class="lock-overlay" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-lock"></i></div>
@@ -777,7 +779,7 @@
                                     <div class="video-title">${v.title}<span class="section-num">${i+1}/${cTotal}</span></div>
                                     <div class="video-desc"><i class="fas fa-tag"></i> ${v.desc}</div>
                                     <div class="video-player-container" style="display:${unlocked ? 'block' : 'none'}">
-                                        <video controls playsinline preload="none" poster="${poster}" data-src="${videoUrl}" style="pointer-events:auto;cursor:pointer;"></video>
+                                        <video controls playsinline preload="none" poster="${poster}" style="pointer-events:auto;cursor:pointer;"></video>
                                     </div>
                                     <div class="video-player-placeholder" style="display:${unlocked ? 'none' : 'flex'}"><i class="fas fa-play-circle"></i> 激活后观看</div>
                                     <span class="unlock-hint">${unlocked ? '<i class="fas fa-check-circle" style="color:#2a7a4a;"></i> 已解锁' : '<i class="fas fa-lock"></i> 需要激活'}</span>
@@ -792,71 +794,71 @@
 
             container.innerHTML = html;
 
-// ================================================================
-// ★★★ 视频懒加载 - 点击播放按钮时才加载（省流） ★★★
-// ================================================================
-document.querySelectorAll('video').forEach(function(video) {
-    var isLoaded = false;
-    var dataSrc = video.getAttribute('data-src');
-    var isPlaying = false;
-
-    // 真正的加载函数：只有点击播放时才执行
-    var loadVideo = function() {
-        if (isLoaded) return;
-        if (!dataSrc) return;
-
-        video.src = dataSrc;
-        video.load();
-        isLoaded = true;
-
-        // 加载完成后自动播放
-        video.addEventListener('canplay', function() {
-            if (!isPlaying) {
-                video.play().catch(function() {});
-                isPlaying = true;
-            }
-        }, { once: true });
-
-        // 如果加载失败，显示提示
-        video.addEventListener('error', function() {
-            var hint = this.closest('.video-card')?.querySelector('.unlock-hint');
-            if (hint) {
-                hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#b13e3e;"></i> 加载失败，请重试';
-                hint.style.background = '#ffe6e6';
-                hint.style.color = '#b13e3e';
-            }
-        }, { once: true });
-    };
-
-    // ★★★ 点击播放按钮 → 加载并播放 ★★★
-    video.addEventListener('play', function(e) {
-        loadVideo();
-        pauseAllOtherVideos(this);
-    });
-
-    // ★★★ 点击视频中间区域 → 加载并播放（和播放按钮行为一致） ★★★
-    video.addEventListener('click', function(e) {
-        // 如果用户点击的是播放按钮区域，play 事件会先触发，这里不再重复加载
-        if (!isLoaded) {
-            loadVideo();
-        } else {
-            video.play().catch(function() {});
-        }
-        pauseAllOtherVideos(this);
-    });
-});
-
-            // 绑定视频事件（互斥播放）
-            allVideos = [];
-            document.querySelectorAll('video').forEach(function(v) {
-                allVideos.push(v);
-                v.addEventListener('play', function() { pauseAllOtherVideos(this); });
+            // ================================================================
+            // ★★★ 视频按需加载（点击播放按钮才加载，省流量） ★★★
+            // ================================================================
+            document.querySelectorAll('.video-card').forEach(function(card) {
+                var video = card.querySelector('video');
+                if (!video) return;
+                
+                var videoUrl = card.getAttribute('data-video-url');
+                if (!videoUrl) return;
+                
+                var isLoaded = false;
+                var isLoading = false;
+                
+                // ★★★ 加载视频函数 ★★★
+                function loadVideo() {
+                    if (isLoaded || isLoading) return;
+                    isLoading = true;
+                    
+                    video.src = videoUrl;
+                    video.load();
+                    
+                    video.addEventListener('canplay', function() {
+                        isLoaded = true;
+                        isLoading = false;
+                        video.play().catch(function() {});
+                    }, { once: true });
+                    
+                    video.addEventListener('error', function() {
+                        isLoading = false;
+                        var hint = card.querySelector('.unlock-hint');
+                        if (hint) {
+                            hint.innerHTML = '<i class="fas fa-exclamation-triangle" style="color:#b13e3e;"></i> 加载失败，请重试';
+                            hint.style.background = '#ffe6e6';
+                            hint.style.color = '#b13e3e';
+                        }
+                    }, { once: true });
+                }
+                
+                // ★★★ 监听 play 事件（点击播放按钮触发） ★★★
+                video.addEventListener('play', function(e) {
+                    loadVideo();
+                    // 暂停其他视频
+                    document.querySelectorAll('video').forEach(function(v) {
+                        if (v !== video && !v.paused) {
+                            v.pause();
+                        }
+                    });
+                });
+                
+                // ★★★ 点击视频区域（非播放按钮）也触发加载 ★★★
+                video.addEventListener('click', function(e) {
+                    if (!isLoaded) {
+                        loadVideo();
+                    } else {
+                        video.play().catch(function() {});
+                    }
+                });
             });
 
             // 图片懒加载
             setTimeout(initLazyLoading, 200);
 
-            // 折叠事件
+            // ================================================================
+            // ★★★ 折叠展开事件（只加载图片，不加载视频） ★★★
+            // ================================================================
             document.querySelectorAll('.folder-header:not(.sub-header)').forEach(function(h) {
                 h.addEventListener('click', function(e) {
                     if (e.target.closest('.sub-header')) return;
@@ -864,11 +866,11 @@ document.querySelectorAll('video').forEach(function(video) {
                     var c = document.getElementById('content-' + id);
                     var icon = this.querySelector('.folder-toggle i');
                     if (c) {
-                        var isOpening = !c.classList.contains('open');
                         c.classList.toggle('open');
                         this.querySelector('.folder-toggle').classList.toggle('open');
                         icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-                        if (isOpening) {
+                        if (c.classList.contains('open')) {
+                            // ★★★ 只加载图片，不加载视频 ★★★
                             var imgs = c.querySelectorAll('.video-thumbnail img');
                             imgs.forEach(function(img) {
                                 if (!img.src || img.src === '' || img.src === window.location.href) {
@@ -879,17 +881,6 @@ document.querySelectorAll('video').forEach(function(video) {
                                 };
                                 if (img.complete) {
                                     img.classList.add('loaded');
-                                }
-                            });
-                            // ★★★ 展开时加载该区域所有视频 ★★★
-                            var videos = c.querySelectorAll('video');
-                            videos.forEach(function(v) {
-                                var src = v.getAttribute('data-src');
-                                if (src && !v.src) {
-                                    v.src = src;
-                                    v.load();
-                                    // 标记为已加载
-                                    v._isLoaded = true;
                                 }
                             });
                         }
@@ -903,11 +894,11 @@ document.querySelectorAll('video').forEach(function(video) {
                     var c = document.getElementById('content-' + id);
                     var icon = this.querySelector('.folder-toggle i');
                     if (c) {
-                        var isOpening = !c.classList.contains('open');
                         c.classList.toggle('open');
                         this.querySelector('.folder-toggle').classList.toggle('open');
                         icon.className = c.classList.contains('open') ? 'fas fa-chevron-up' : 'fas fa-chevron-down';
-                        if (isOpening) {
+                        if (c.classList.contains('open')) {
+                            // ★★★ 只加载图片，不加载视频 ★★★
                             var imgs = c.querySelectorAll('.video-thumbnail img');
                             imgs.forEach(function(img) {
                                 if (!img.src || img.src === '' || img.src === window.location.href) {
@@ -918,16 +909,6 @@ document.querySelectorAll('video').forEach(function(video) {
                                 };
                                 if (img.complete) {
                                     img.classList.add('loaded');
-                                }
-                            });
-                            // ★★★ 展开时加载该区域所有视频 ★★★
-                            var videos = c.querySelectorAll('video');
-                            videos.forEach(function(v) {
-                                var src = v.getAttribute('data-src');
-                                if (src && !v.src) {
-                                    v.src = src;
-                                    v.load();
-                                    v._isLoaded = true;
                                 }
                             });
                         }
@@ -1082,7 +1063,7 @@ document.querySelectorAll('video').forEach(function(video) {
                 hideRememberedUser();
                 setStatus('📱 输入已激活的手机号，解锁全部视频', 'info');
             }
-            console.log('🎯 信息处理技术员视频学习平台已加载');
+            console.log('🎯 信息处理技术员视频学习平台已加载（按需加载）');
             console.log('📱 微信浏览器: ' + (isWechatBrowser() ? '是 ✅ 已显示提示' : '否'));
         }
 
